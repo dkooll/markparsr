@@ -63,6 +63,8 @@ func main() {
 # Title of Document
 Some introductory text.
 
+# Another Heading.
+
 ## Resources
 The following resources are used by this module:
 

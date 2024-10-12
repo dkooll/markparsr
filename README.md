@@ -1,6 +1,6 @@
 # MarkParsr
 
-MarkParsr is an experimental markdown parser created for learning purposes.
+MarkParsr is using a existing markdown parser just for for learning purposes.
 
 It demonstrates basic techniques for processing markdown documents.
 

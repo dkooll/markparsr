@@ -31,10 +31,10 @@ func printHeadings(node ast.Node) {
 	})
 }
 
-// Function to print the AST tree structure with dynamic type info
+// Function to print the AST tree structure with dynamic type info and level
 func printASTTree(node ast.Node, depth int) {
 	indent := strings.Repeat("  ", depth) // Indentation based on depth
-	fmt.Printf("%sNode Type: %T\n", indent, node) // Print the dynamic type of the node
+	fmt.Printf("%sNode Type: %T (Level: %d)\n", indent, node, depth) // Print the dynamic type of the node and its level
 
 	// Recursively walk through the children
 	for _, child := range node.GetChildren() {

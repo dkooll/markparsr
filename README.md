@@ -1,6 +1,6 @@
-# MarkParsr
+# markparsr
 
-MarkParsr is using a existing markdown parser just for for learning purposes.
+markparsr is using a existing markdown parser just for for learning purposes.
 
 It demonstrates basic techniques for processing markdown documents.
 

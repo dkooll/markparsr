@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dkooll/markparsr"
+	"github.com/azyphon/markparsr"
 )
 
 func main() {

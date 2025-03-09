@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	"github.com/dkooll/markparsr"
+	"github.com/azyphon/markparsr"
 )
 
 // TestReadmeValidation demonstrates how to use markparsr in a test

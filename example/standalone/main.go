@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	// Example 1: Using default configuration
+	// example 1: default configuration
 	fmt.Println("Validating README with default configuration...")
 	validator, err := markparsr.New(nil)
 	if err != nil {
@@ -28,7 +28,7 @@ func main() {
 
 	fmt.Println("Validation successful!")
 
-	// Example 2: Using custom configuration
+	// example 2: custom configuration
 	fmt.Println("\nValidating README with custom configuration...")
 	customConfig := &markparsr.Config{
 		ReadmePath:              "README.md",

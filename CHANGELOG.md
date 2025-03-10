@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/azyphon/markparsr/compare/v1.1.0...v1.2.0) (2025-03-10)
+
+
+### Features
+
+* add support for non table markdown format as well ([#8](https://github.com/azyphon/markparsr/issues/8)) ([ba3ed55](https://github.com/azyphon/markparsr/commit/ba3ed55f5bce82e0563aa61b352b19a268f17a78))
+
 ## [1.1.0](https://github.com/azyphon/markparsr/compare/v1.0.1...v1.1.0) (2025-03-10)
 
 

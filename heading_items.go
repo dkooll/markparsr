@@ -48,8 +48,7 @@ func (iv *HeadingItemValidator) Validate() []error {
 
 	var mdItems []string
 	for _, section := range iv.sections {
-		items := extractHeadingMarkdownSectionItems(iv.data, section)
-		mdItems = append(mdItems, items...)
+		mdItems = append(mdItems, extractHeadingMarkdownSectionItems(iv.data, section)...)
 	}
 
 	return compareTerraformAndMarkdown(tfItems, mdItems, iv.itemType)

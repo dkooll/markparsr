@@ -51,7 +51,7 @@ type Config struct {
 // DefaultConfig returns a default configuration
 func DefaultConfig() *Config {
 	return &Config{
-		ReadmePath:     "README.md",
+		ReadmePath:      "README.md",
 		ValidationStyle: "table", // Default to table-based validation
 	}
 }
@@ -85,8 +85,8 @@ func New(config *Config) (*MarkdownValidator, error) {
 	data := string(dataBytes)
 
 	mv := &MarkdownValidator{
-		ReadmePath: absReadmePath,
-		Data:       data,
+		ReadmePath:    absReadmePath,
+		Data:          data,
 		foundSections: make(map[string]bool),
 	}
 
@@ -201,6 +201,7 @@ func (mv *MarkdownValidator) ValidateWithFailFast() error {
 	}
 	return nil
 }
+
 //
 //
 // // Package markparsr provides utilities for validating markdown documentation

@@ -242,15 +242,3 @@ func extractFromFilePath(filePath string) ([]string, []string, error) {
 
 	return resources, dataSources, nil
 }
-
-// filterUnsupportedBlockDiagnostics filters out diagnostics related to unsupported block types
-func filterUnsupportedBlockDiagnostics(diags hcl.Diagnostics) hcl.Diagnostics {
-	var filteredDiags hcl.Diagnostics
-	for _, diag := range diags {
-		if diag.Severity == hcl.DiagError && strings.Contains(diag.Summary, "Unsupported block type") {
-			continue
-		}
-		filteredDiags = append(filteredDiags, diag)
-	}
-	return filteredDiags
-}

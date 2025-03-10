@@ -162,20 +162,3 @@ func extractMarkdownSectionItems(data, sectionName string) ([]string, error) {
 
 	return items, nil
 }
-
-// compareTerraformAndMarkdown compares items in Terraform and markdown
-func compareTerraformAndMarkdown(tfItems, mdItems []string, itemType string) []error {
-	var errors []error
-
-	missingInMarkdown := findMissingItems(tfItems, mdItems)
-	if len(missingInMarkdown) > 0 {
-		errors = append(errors, formatError("%s missing in markdown:\n  %s", itemType, strings.Join(missingInMarkdown, "\n  ")))
-	}
-
-	missingInTerraform := findMissingItems(mdItems, tfItems)
-	if len(missingInTerraform) > 0 {
-		errors = append(errors, formatError("%s in markdown but missing in Terraform:\n  %s", itemType, strings.Join(missingInTerraform, "\n  ")))
-	}
-
-	return errors
-}

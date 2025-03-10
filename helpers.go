@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gomarkdown/markdown/ast"
+	"github.com/hashicorp/hcl/v2"
 )
 
 // formatError formats an error message
@@ -71,6 +72,23 @@ func validateColumns(header string, required, optional, actual []string) []error
 				errors = append(errors, formatError("missing required column '%s' in table under header: %s", req, header))
 			}
 		}
+	}
+
+	return errors
+}
+
+// compareTerraformAndMarkdown compares items in Terraform and markdown
+func compareTerraformAndMarkdown(tfItems, mdItems []string, itemType string) []error {
+	var errors []error
+
+	missingInMarkdown := findMissingItems(tfItems, mdItems)
+	if len(missingInMarkdown) > 0 {
+		errors = append(errors, formatError("%s missing in markdown:\n  %s", itemType, strings.Join(missingInMarkdown, "\n  ")))
+	}
+
+	missingInTerraform := findMissingItems(mdItems, tfItems)
+	if len(missingInTerraform) > 0 {
+		errors = append(errors, formatError("%s in markdown but missing in Terraform:\n  %s", itemType, strings.Join(missingInTerraform, "\n  ")))
 	}
 
 	return errors
@@ -151,4 +169,16 @@ func extractTextFromNodes(nodes []ast.Node) string {
 		sb.WriteString(extractText(node))
 	}
 	return sb.String()
+}
+
+// filterUnsupportedBlockDiagnostics filters out diagnostics related to unsupported block types
+func filterUnsupportedBlockDiagnostics(diags hcl.Diagnostics) hcl.Diagnostics {
+	var filteredDiags hcl.Diagnostics
+	for _, diag := range diags {
+		if diag.Severity == hcl.DiagError && strings.Contains(diag.Summary, "Unsupported block type") {
+			continue
+		}
+		filteredDiags = append(filteredDiags, diag)
+	}
+	return filteredDiags
 }

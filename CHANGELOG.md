@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/azyphon/markparsr/compare/v1.3.0...v1.4.0) (2025-03-10)
+
+
+### Features
+
+* some minor cleanups ([#12](https://github.com/azyphon/markparsr/issues/12)) ([4a1edf3](https://github.com/azyphon/markparsr/commit/4a1edf3a1b6c866aa6638a829d3a610c8e3d2bea))
+
 ## [1.3.0](https://github.com/azyphon/markparsr/compare/v1.2.0...v1.3.0) (2025-03-10)
 
 

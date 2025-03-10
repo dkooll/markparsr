@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/azyphon/markparsr/compare/v1.2.0...v1.3.0) (2025-03-10)
+
+
+### Features
+
+* fix non table md ([#10](https://github.com/azyphon/markparsr/issues/10)) ([a294c06](https://github.com/azyphon/markparsr/commit/a294c0632123881f0bcef30901e5d3747110b15a))
+
 ## [1.2.0](https://github.com/azyphon/markparsr/compare/v1.1.0...v1.2.0) (2025-03-10)
 
 

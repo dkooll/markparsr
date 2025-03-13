@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/azyphon/markparsr/compare/v1.4.0...v1.5.0) (2025-03-13)
+
+
+### Features
+
+* small refactor ([#14](https://github.com/azyphon/markparsr/issues/14)) ([6e57c38](https://github.com/azyphon/markparsr/commit/6e57c38561b8b2e8bb818c8dcf39e1ba70e8c91b))
+
 ## [1.4.0](https://github.com/azyphon/markparsr/compare/v1.3.0...v1.4.0) (2025-03-10)
 
 

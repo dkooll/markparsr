@@ -3,182 +3,52 @@ package markparsr
 import (
 	"fmt"
 	"strings"
-
-	"github.com/gomarkdown/markdown/ast"
-	"github.com/hashicorp/hcl/v2"
 )
 
-// formatError formats an error message
-func formatError(format string, args ...any) error {
-	return fmt.Errorf(format, args...)
-}
-
-// compareHeaders compares expected and actual headers
-func compareHeaders(expected, actual string) error {
-	if expected != actual {
-		if actual == "" {
-			return formatError("incorrect header:\n  expected '%s', found 'not present'", expected)
-		}
-		return formatError("incorrect header:\n  expected '%s', found '%s'", expected, actual)
-	}
-	return nil
-}
-
-// findMissingItems finds items that are in a but not in b
-func findMissingItems(a, b []string) []string {
-	bSet := make(map[string]struct{}, len(b))
-	for _, x := range b {
-		bSet[x] = struct{}{}
-	}
-	var missing []string
-	for _, x := range a {
-		if _, found := bSet[x]; !found {
-			missing = append(missing, x)
-		}
-	}
-	return missing
-}
-
-// validateColumns checks if the required and optional columns are present
-func validateColumns(header string, required, optional, actual []string) []error {
-	var errors []error
-
-	// Create a map of valid columns
-	validColumns := make(map[string]bool)
-	for _, col := range required {
-		validColumns[col] = true
-	}
-	for _, col := range optional {
-		validColumns[col] = true
-	}
-
-	// Track found and invalid columns
-	foundColumns := make(map[string]bool)
-	hasInvalidColumns := false
-
-	// First check for unexpected columns
-	for _, act := range actual {
-		if !validColumns[act] {
-			hasInvalidColumns = true
-			errors = append(errors, formatError("unexpected column '%s' in table under header: %s", act, header))
-		}
-		foundColumns[act] = true
-	}
-
-	// Only check for missing required columns if there were no invalid columns
-	if !hasInvalidColumns {
-		for _, req := range required {
-			if !foundColumns[req] {
-				errors = append(errors, formatError("missing required column '%s' in table under header: %s", req, header))
-			}
-		}
-	}
-
-	return errors
-}
-
-// compareTerraformAndMarkdown compares items in Terraform and markdown
 func compareTerraformAndMarkdown(tfItems, mdItems []string, itemType string) []error {
-	var errors []error
+	errors := make([]error, 0, len(tfItems)+len(mdItems))
+	tfSet := make(map[string]bool, len(tfItems)*2)
+	mdSet := make(map[string]bool, len(mdItems)*2)
+	reported := make(map[string]bool, len(tfItems)+len(mdItems))
 
-	missingInMarkdown := findMissingItems(tfItems, mdItems)
-	if len(missingInMarkdown) > 0 {
-		errors = append(errors, formatError("%s missing in markdown:\n  %s", itemType, strings.Join(missingInMarkdown, "\n  ")))
+	getFullName := func(items []string, baseName string) string {
+		for _, item := range items {
+			if strings.HasPrefix(item, baseName+".") {
+				return item
+			}
+		}
+		return baseName
 	}
 
-	missingInTerraform := findMissingItems(mdItems, tfItems)
-	if len(missingInTerraform) > 0 {
-		errors = append(errors, formatError("%s in markdown but missing in Terraform:\n  %s", itemType, strings.Join(missingInTerraform, "\n  ")))
+	for _, item := range tfItems {
+		tfSet[item] = true
+		baseName := strings.Split(item, ".")[0]
+		tfSet[baseName] = true
+	}
+
+	for _, item := range mdItems {
+		mdSet[item] = true
+		baseName := strings.Split(item, ".")[0]
+		mdSet[baseName] = true
+	}
+
+	for _, tfItem := range tfItems {
+		baseName := strings.Split(tfItem, ".")[0]
+		if !mdSet[tfItem] && !mdSet[baseName] && !reported[baseName] {
+			fullName := getFullName(tfItems, baseName)
+			errors = append(errors, fmt.Errorf("%s in Terraform but missing in markdown: %s", itemType, fullName))
+			reported[baseName] = true
+		}
+	}
+
+	for _, mdItem := range mdItems {
+		baseName := strings.Split(mdItem, ".")[0]
+		if !tfSet[mdItem] && !tfSet[baseName] && !reported[baseName] {
+			fullName := getFullName(mdItems, baseName)
+			errors = append(errors, fmt.Errorf("%s in markdown but missing in Terraform: %s", itemType, fullName))
+			reported[baseName] = true
+		}
 	}
 
 	return errors
-}
-
-// getNextSibling returns the next sibling of a node
-func getNextSibling(node ast.Node) ast.Node {
-	parent := node.GetParent()
-	if parent == nil {
-		return nil
-	}
-	children := parent.GetChildren()
-	for i, n := range children {
-		if n == node && i+1 < len(children) {
-			return children[i+1]
-		}
-	}
-	return nil
-}
-
-// extractTableHeaders extracts headers from a markdown table
-func extractTableHeaders(table *ast.Table) ([]string, error) {
-	headers := []string{}
-
-	if len(table.GetChildren()) == 0 {
-		return nil, fmt.Errorf("table is empty")
-	}
-
-	// The first child should be TableHeader
-	var headerNode *ast.TableHeader
-	for _, child := range table.GetChildren() {
-		if h, ok := child.(*ast.TableHeader); ok {
-			headerNode = h
-			break
-		}
-	}
-
-	if headerNode == nil {
-		return nil, fmt.Errorf("table has no header row")
-	}
-
-	// The header row is under TableHeader
-	for _, rowNode := range headerNode.GetChildren() {
-		if row, ok := rowNode.(*ast.TableRow); ok {
-			for _, cellNode := range row.GetChildren() {
-				if cell, ok := cellNode.(*ast.TableCell); ok {
-					headerText := strings.TrimSpace(extractTextFromNodes(cell.GetChildren()))
-					headers = append(headers, headerText)
-				}
-			}
-		}
-	}
-
-	return headers, nil
-}
-
-// extractText extracts text from a node, including code spans
-func extractText(node ast.Node) string {
-	var sb strings.Builder
-	ast.WalkFunc(node, func(n ast.Node, entering bool) ast.WalkStatus {
-		if entering {
-			switch tn := n.(type) {
-			case *ast.Text:
-				sb.Write(tn.Literal)
-			case *ast.Code:
-				sb.Write(tn.Literal)
-			}
-		}
-		return ast.GoToNext
-	})
-	return sb.String()
-}
-
-// extractTextFromNodes extracts text from a slice of nodes
-func extractTextFromNodes(nodes []ast.Node) string {
-	var sb strings.Builder
-	for _, node := range nodes {
-		sb.WriteString(extractText(node))
-	}
-	return sb.String()
-}
-
-// filterUnsupportedBlockDiagnostics filters out diagnostics related to unsupported block types
-func filterUnsupportedBlockDiagnostics(diags hcl.Diagnostics) hcl.Diagnostics {
-	var filteredDiags hcl.Diagnostics
-	for _, diag := range diags {
-		if diag.Severity == hcl.DiagError && strings.Contains(diag.Summary, "Unsupported block type") {
-			continue
-		}
-		filteredDiags = append(filteredDiags, diag)
-	}
-	return filteredDiags
 }

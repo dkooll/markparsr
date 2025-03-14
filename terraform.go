@@ -11,12 +11,17 @@ import (
 	"github.com/hashicorp/hcl/v2/hclparse"
 )
 
+// TerraformContent extracts resources, data sources, variables, and outputs
+// from Terraform files for documentation validation.
 type TerraformContent struct {
 	workspace  string
 	parserPool *sync.Pool
 	fileCache  sync.Map
 }
 
+// NewTerraformContent creates a new analyzer for Terraform content.
+// Uses GITHUB_WORKSPACE environment variable as the root directory if available,
+// otherwise defaults to the current working directory.
 func NewTerraformContent() (*TerraformContent, error) {
 	workspace := os.Getenv("GITHUB_WORKSPACE")
 	if workspace == "" {
@@ -37,6 +42,8 @@ func NewTerraformContent() (*TerraformContent, error) {
 	}, nil
 }
 
+// ExtractItems gets items of a specific block type (like variables or outputs)
+// from a Terraform file.
 func (tc *TerraformContent) ExtractItems(filePath, blockType string) ([]string, error) {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
@@ -80,6 +87,9 @@ func (tc *TerraformContent) ExtractItems(filePath, blockType string) ([]string, 
 	return items, nil
 }
 
+// ExtractResourcesAndDataSources finds all resources and data sources defined in
+// Terraform files, searching in caller/main.tf and recursively through caller/modules.
+// It runs the search concurrently for better performance.
 func (tc *TerraformContent) ExtractResourcesAndDataSources() ([]string, []string, error) {
 	var (
 		resources      = make([]string, 0, 32)
@@ -92,6 +102,7 @@ func (tc *TerraformContent) ExtractResourcesAndDataSources() ([]string, []string
 
 	wg.Add(2)
 
+	// Extract from main.tf
 	go func() {
 		defer wg.Done()
 		mainPath := filepath.Join(tc.workspace, "caller", "main.tf")
@@ -104,6 +115,7 @@ func (tc *TerraformContent) ExtractResourcesAndDataSources() ([]string, []string
 		dataSourceChan <- specificDataSources
 	}()
 
+	// Extract from modules directory recursively
 	go func() {
 		defer wg.Done()
 		modulesPath := filepath.Join(tc.workspace, "caller", "modules")
@@ -139,6 +151,7 @@ func (tc *TerraformContent) ExtractResourcesAndDataSources() ([]string, []string
 	return resources, dataSources, nil
 }
 
+// extractFromFilePath gets resources and data sources from a single Terraform file.
 func (tc *TerraformContent) extractFromFilePath(filePath string) ([]string, []string, error) {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
@@ -194,6 +207,8 @@ func (tc *TerraformContent) extractFromFilePath(filePath string) ([]string, []st
 	return resources, dataSources, nil
 }
 
+// extractRecursively walks through a directory and extracts resources
+// and data sources from all .tf files.
 func (tc *TerraformContent) extractRecursively(dirPath string) ([]string, []string, error) {
 	var resources []string
 	var dataSources []string

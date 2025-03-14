@@ -10,6 +10,8 @@ type Validator interface {
 	Validate() []error
 }
 
+// ReadmeValidator is the main validator that coordinates validation
+// of Terraform module documentation.
 type ReadmeValidator struct {
 	readmePath string
 	markdown   *MarkdownContent
@@ -17,6 +19,12 @@ type ReadmeValidator struct {
 	validators []Validator
 }
 
+// NewReadmeValidator creates a new ReadmeValidator for the specified README file.
+// It initializes all required validators to check various aspects of the documentation.
+// The readmePath can be overridden by setting the README_PATH environment variable.
+// Returns:
+//   - A pointer to the initialized ReadmeValidator
+//   - An error if initialization fails (file not found, parsing errors, etc.)
 func NewReadmeValidator(readmePath string) (*ReadmeValidator, error) {
 	if envPath := os.Getenv("README_PATH"); envPath != "" {
 		readmePath = envPath
@@ -58,6 +66,11 @@ func NewReadmeValidator(readmePath string) (*ReadmeValidator, error) {
 	return validator, nil
 }
 
+// Validate runs all registered validators and collects their errors.
+// Each validator is executed independently, and errors from all validators
+// are combined into a single slice.
+// Returns:
+//   - A slice of errors from all validators. Empty if validation is successful.
 func (rv *ReadmeValidator) Validate() []error {
 	var allErrors []error
 	for _, validator := range rv.validators {

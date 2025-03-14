@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/azyphon/markparsr/compare/v1.8.0...v1.9.0) (2025-03-14)
+
+
+### Features
+
+* remove examples dir and updated documentation ([#22](https://github.com/azyphon/markparsr/issues/22)) ([c2056b8](https://github.com/azyphon/markparsr/commit/c2056b816691885e12f2c4cf652b9730e6fad09d))
+
 ## [1.8.0](https://github.com/azyphon/markparsr/compare/v1.7.0...v1.8.0) (2025-03-14)
 
 

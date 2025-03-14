@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0](https://github.com/azyphon/markparsr/compare/v1.9.0...v1.10.0) (2025-03-14)
+
+
+### Features
+
+* remove docs.go ([#24](https://github.com/azyphon/markparsr/issues/24)) ([7fbd009](https://github.com/azyphon/markparsr/commit/7fbd009a231868035e075a1dab7d0b6d4d9ab78d))
+
 ## [1.9.0](https://github.com/azyphon/markparsr/compare/v1.8.0...v1.9.0) (2025-03-14)
 
 

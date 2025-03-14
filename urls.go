@@ -9,14 +9,19 @@ import (
 	"mvdan.cc/xurls/v2"
 )
 
+// URLValidator checks that all URLs in markdown documentation are accessible.
 type URLValidator struct {
 	content *MarkdownContent
 }
 
+// NewURLValidator creates a validator for checking URLs in markdown content.
 func NewURLValidator(content *MarkdownContent) *URLValidator {
 	return &URLValidator{content: content}
 }
 
+// Validate checks all URLs in the markdown content to ensure they are accessible.
+// Skips Terraform Registry URLs (registry.terraform.io/providers/) and makes
+// concurrent HTTP requests to each URL for better performance.
 func (uv *URLValidator) Validate() []error {
 	rxStrict := xurls.Strict()
 	urls := rxStrict.FindAllString(uv.content.data, -1)
@@ -48,6 +53,7 @@ func (uv *URLValidator) Validate() []error {
 	return errors
 }
 
+// validateSingleURL checks if a URL is accessible and returns a 200 OK status.
 func validateSingleURL(url string) error {
 	resp, err := http.Get(url)
 	if err != nil {

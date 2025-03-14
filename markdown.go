@@ -11,8 +11,8 @@ import (
 	"github.com/gomarkdown/markdown/parser"
 )
 
-// MarkdownContent represents parsed markdown content for analysis.
-// It provides methods to extract and validate sections, resources, and other elements.
+// MarkdownContent parses and analyzes Terraform module documentation.
+// It provides methods to check for sections and extract documented resources.
 type MarkdownContent struct {
 	data       string
 	rootNode   ast.Node
@@ -21,13 +21,8 @@ type MarkdownContent struct {
 	stringPool *sync.Pool
 }
 
-// NewMarkdownContent creates a new MarkdownContent from markdown text.
-// It parses the markdown into an AST (Abstract Syntax Tree) for analysis
-// and initializes caches to improve performance during validation.
-// Parameters:
-//   - data: The markdown text to parse and analyze
-// Returns:
-//   - A pointer to the initialized MarkdownContent
+// NewMarkdownContent creates a new analyzer for markdown content.
+// It parses the markdown into an AST for efficient analysis.
 func NewMarkdownContent(data string) *MarkdownContent {
 	extensions := parser.CommonExtensions | parser.AutoHeadingIDs
 	p := parser.NewWithExtensions(extensions)
@@ -46,13 +41,9 @@ func NewMarkdownContent(data string) *MarkdownContent {
 	}
 }
 
-// HasSection checks if a named section exists in the markdown.
-// Section names are matched case-insensitively. For specific sections like "Inputs",
-// additional variations like "Required Inputs" or "Optional Inputs" are also checked.
-// Parameters:
-//   - sectionName: The name of the section to check for
-// Returns:
-//   - true if the section exists, false otherwise
+// HasSection checks if a section exists in the markdown.
+// Section matching is case-insensitive and handles plural forms.
+// For "Inputs", it also matches "Required Inputs" or "Optional Inputs".
 func (mc *MarkdownContent) HasSection(sectionName string) bool {
 	if found, exists := mc.sections[sectionName]; exists {
 		return found
@@ -76,13 +67,8 @@ func (mc *MarkdownContent) HasSection(sectionName string) bool {
 	return found
 }
 
-// ExtractSectionItems retrieves item names from a section or sections.
-// For documentation sections like "Inputs" or "Outputs", this extracts
-// the names of items from level 3 headings within those sections.
-// Parameters:
-//   - sectionNames: Names of sections to extract items from (can specify multiple)
-// Returns:
-//   - A slice of strings containing the extracted item names
+// ExtractSectionItems extracts item names from level 3 headings within specified sections.
+// This is typically used to find documented variables and outputs.
 func (mc *MarkdownContent) ExtractSectionItems(sectionNames ...string) []string {
 	var items []string
 	inTargetSection := false
@@ -109,14 +95,9 @@ func (mc *MarkdownContent) ExtractSectionItems(sectionNames ...string) []string 
 	return items
 }
 
-// ExtractResourcesAndDataSources extracts Terraform resources and data sources
-// mentioned in the markdown.
-// Resources and data sources are identified from links in the "Resources" section.
-// Links to data sources typically contain "/data-sources/" in their URL.
-// Returns:
-//   - A slice of resource names
-//   - A slice of data source names
-//   - An error if no resources section is found or it's empty
+// ExtractResourcesAndDataSources finds Terraform resources and data sources in the markdown.
+// It looks for links containing "azurerm_" in the Resources section, distinguishing
+// between regular resources and data sources based on URL patterns.
 func (mc *MarkdownContent) ExtractResourcesAndDataSources() ([]string, []string, error) {
 	var resources []string
 	var dataSources []string
@@ -168,13 +149,7 @@ func (mc *MarkdownContent) ExtractResourcesAndDataSources() ([]string, []string,
 	return resources, dataSources, nil
 }
 
-// extractText extracts the text content from a markdown AST node.
-// Extracts text from Text and Code nodes, using a string builder pool
-// for better performance.
-// Parameters:
-//   - node: The AST node to extract text from
-// Returns:
-//   - The extracted text as a string
+// extractText gets the text content from a node, using a string pool for efficiency.
 func (mc *MarkdownContent) extractText(node ast.Node) string {
 	sb := mc.stringPool.Get().(*strings.Builder)
 	sb.Reset()

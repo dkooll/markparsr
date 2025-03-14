@@ -1,48 +1,23 @@
 /*
-Package markparsr provides tools for validating Terraform module documentation.
+Package markparsr validates that terraform module documentation is complete and accurate.
 
-markparsr ensures that markdown documentation for Terraform modules is complete,
-accurate, and follows best practices. It validates that all resources, data sources,
-inputs, and outputs mentioned in Terraform code are properly documented, and vice versa.
+markparsr ensures there's consistency between your Terraform code and README documentation,
+helping maintain documentation quality as your module evolves. The package analyzes both
+HCL files and markdown to identify gaps or inconsistencies.
 
-# Core Features
+Key validations:
+  - Resources/data sources match between code and docs
+  - Variables and outputs are properly documented
+  - Required documentation sections are present
+  - Referenced URLs are accessible
+  - Required files exist and aren't empty
 
-  - Validate presence of required documentation sections
-  - Check that all Terraform resources and data sources are documented
-  - Verify that all inputs (variables) are documented
-  - Ensure that all outputs are documented
-  - Validate that referenced URLs are accessible
-  - Check for existence of required files
-
-# Basic Usage
-
-Create a validator and run validation:
-
-	validator, err := markparsr.NewReadmeValidator("path/to/README.md")
-	if err != nil {
-		// Handle error
-	}
-
+Usage:
+	validator, _ := markparsr.NewReadmeValidator("path/to/README.md")
 	errors := validator.Validate()
-	if len(errors) > 0 {
-		// Handle validation errors
-	}
+	// Handle errors as needed
 
-# Validation Components
-
-The package provides several validators that can be used individually or together:
-
-  - SectionValidator: Ensures required sections exist in the documentation
-  - FileValidator: Checks required files exist and are not empty
-  - URLValidator: Validates URLs in the documentation are accessible
-  - TerraformDefinitionValidator: Compares Terraform resources/data sources with documentation
-  - ItemValidator: Validates variables and outputs are properly documented
-
-# Environment Variables
-
-The package recognizes these environment variables:
-
-  - README_PATH: Override path to README.md
-  - GITHUB_WORKSPACE: Base directory for Terraform file scanning (defaults to current directory)
+The package assumes a standard Terraform module structure with README.md,
+variables.tf, outputs.tf, and other standard files in the same directory.
 */
 package markparsr

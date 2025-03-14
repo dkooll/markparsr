@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// SectionValidator checks for the presence of required sections in markdown documentation.
+// SectionValidator checks for required sections in Terraform module documentation.
 type SectionValidator struct {
 	content  *MarkdownContent
 	sections []string
@@ -20,9 +20,7 @@ func NewSectionValidator(content *MarkdownContent) *SectionValidator {
 }
 
 // Validate checks that all required sections are present in the markdown.
-// Each missing section results in an error added to the returned slice.
-// Returns:
-//   - A slice of errors for missing sections. Empty if all required sections exist.
+// Reports an error for each missing section.
 func (sv *SectionValidator) Validate() []error {
 	var allErrors []error
 

@@ -26,7 +26,6 @@ type ItemValidator struct {
 //   - blockType: The Terraform block type to check (e.g., "variable", "output")
 //   - sections: Markdown sections where these items should be documented
 //   - fileName: Name of the Terraform file containing these items (e.g., "variables.tf")
-//
 // Returns:
 //   - A pointer to the initialized ItemValidator
 func NewItemValidator(markdown *MarkdownContent, terraform *TerraformContent, itemType, blockType string, sections []string, fileName string) *ItemValidator {
@@ -49,6 +48,7 @@ func NewItemValidator(markdown *MarkdownContent, terraform *TerraformContent, it
 //     Empty if all items are properly documented.
 func (iv *ItemValidator) Validate() []error {
 	// Skip validation if none of the relevant sections exist
+func (iv *ItemValidator) Validate() []error {
 	sectionExists := slices.ContainsFunc(iv.sections, func(section string) bool {
 		return iv.markdown.HasSection(section)
 	})
@@ -56,7 +56,6 @@ func (iv *ItemValidator) Validate() []error {
 	if !sectionExists {
 		return nil
 	}
-
 	// Extract items from Terraform file
 	filePath := filepath.Join(iv.terraform.workspace, "caller", iv.fileName)
 	tfItems, err := iv.terraform.ExtractItems(filePath, iv.blockType)

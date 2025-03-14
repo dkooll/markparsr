@@ -13,6 +13,7 @@ import (
 //   - tfItems: Slice of items found in Terraform code
 //   - mdItems: Slice of items found in markdown documentation
 //   - itemType: Description of the type of items (e.g., "Resources", "Data Sources")
+//
 // Returns:
 //   - A slice of errors describing mismatches between Terraform and markdown
 func compareTerraformAndMarkdown(tfItems, mdItems []string, itemType string) []error {
@@ -65,6 +66,5 @@ func compareTerraformAndMarkdown(tfItems, mdItems []string, itemType string) []e
 			reported[baseName] = true
 		}
 	}
-
 	return errors
 }

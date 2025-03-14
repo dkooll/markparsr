@@ -24,10 +24,8 @@ type MarkdownContent struct {
 // NewMarkdownContent creates a new MarkdownContent from markdown text.
 // It parses the markdown into an AST (Abstract Syntax Tree) for analysis
 // and initializes caches to improve performance during validation.
-//
 // Parameters:
 //   - data: The markdown text to parse and analyze
-//
 // Returns:
 //   - A pointer to the initialized MarkdownContent
 func NewMarkdownContent(data string) *MarkdownContent {

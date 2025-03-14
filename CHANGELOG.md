@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/azyphon/markparsr/compare/v1.7.0...v1.8.0) (2025-03-14)
+
+
+### Features
+
+* update documenation ([#20](https://github.com/azyphon/markparsr/issues/20)) ([d8da978](https://github.com/azyphon/markparsr/commit/d8da978a02fd1d0f4816133f2864ce839866ffb9))
+
 ## [1.7.0](https://github.com/azyphon/markparsr/compare/v1.6.0...v1.7.0) (2025-03-14)
 
 

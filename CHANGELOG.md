@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/azyphon/markparsr/compare/v1.5.0...v1.6.0) (2025-03-14)
+
+
+### Features
+
+* place inline comments for documentation ([#16](https://github.com/azyphon/markparsr/issues/16)) ([21db48c](https://github.com/azyphon/markparsr/commit/21db48cbd8e23c42238e8171e89fa97624c5e474))
+
 ## [1.5.0](https://github.com/azyphon/markparsr/compare/v1.4.0...v1.5.0) (2025-03-13)
 
 

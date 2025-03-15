@@ -12,17 +12,17 @@ type FileValidator struct {
 	files   []string
 }
 
-// NewFileValidator creates a validator that checks for certains file in module directory.
-func NewFileValidator(readmePath string) *FileValidator {
-	rootDir := filepath.Dir(readmePath)
+// NewFileValidator creates a validator that checks for certain files in module directory.
+// It accepts both the README path and module path to check files in both locations.
+func NewFileValidator(readmePath string, modulePath string) *FileValidator {
+	// Use module path for terraform files
 	files := []string{
 		readmePath,
-		filepath.Join(rootDir, "outputs.tf"),
-		filepath.Join(rootDir, "variables.tf"),
-		filepath.Join(rootDir, "terraform.tf"),
-		filepath.Join(rootDir, "Makefile"),
+		filepath.Join(modulePath, "outputs.tf"),
+		filepath.Join(modulePath, "variables.tf"),
+		filepath.Join(modulePath, "terraform.tf"),
 	}
-	return &FileValidator{rootDir: rootDir, files: files}
+	return &FileValidator{rootDir: modulePath, files: files}
 }
 
 // Validate checks that all required files exist and are not empty.

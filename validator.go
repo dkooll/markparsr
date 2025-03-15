@@ -12,24 +12,46 @@ type Validator interface {
 }
 
 // ReadmeValidator coordinates validation of Terraform module documentation.
-// It runs multiple specialized validators to ensure documentation completeness.
 type ReadmeValidator struct {
 	readmePath string
+	modulePath string
 	markdown   *MarkdownContent
 	terraform  *TerraformContent
 	validators []Validator
 }
 
 // NewReadmeValidator creates a validator for the specified README file.
-// The path can be overridden by setting the README_PATH environment variable.
-func NewReadmeValidator(readmePath string) (*ReadmeValidator, error) {
+// The optional modulePath parameter specifies where to find Terraform files.
+// Without modulePath, the README's directory is used.
+// Environment variables README_PATH and MODULE_PATH take precedence when set.
+func NewReadmeValidator(readmePath string, modulePath ...string) (*ReadmeValidator, error) {
+	// Check for README_PATH override
 	if envPath := os.Getenv("README_PATH"); envPath != "" {
 		readmePath = envPath
 	}
 
 	absReadmePath, err := filepath.Abs(readmePath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get absolute path: %w", err)
+		return nil, fmt.Errorf("failed to get absolute path for README: %w", err)
+	}
+
+	// Determine the module path
+	var moduleDir string
+
+	// Check for MODULE_PATH override first
+	if envModulePath := os.Getenv("MODULE_PATH"); envModulePath != "" {
+		moduleDir = envModulePath
+	} else if len(modulePath) > 0 && modulePath[0] != "" {
+		// Use explicitly provided module path if available
+		moduleDir = modulePath[0]
+	} else {
+		// Default to README's directory
+		moduleDir = filepath.Dir(absReadmePath)
+	}
+
+	absModulePath, err := filepath.Abs(moduleDir)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get absolute module path: %w", err)
 	}
 
 	data, err := os.ReadFile(absReadmePath)
@@ -39,13 +61,14 @@ func NewReadmeValidator(readmePath string) (*ReadmeValidator, error) {
 
 	markdown := NewMarkdownContent(string(data))
 
-	terraform, err := NewTerraformContent()
+	terraform, err := NewTerraformContent(absModulePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize terraform content: %w", err)
 	}
 
 	validator := &ReadmeValidator{
 		readmePath: absReadmePath,
+		modulePath: absModulePath,
 		markdown:   markdown,
 		terraform:  terraform,
 	}
@@ -53,7 +76,7 @@ func NewReadmeValidator(readmePath string) (*ReadmeValidator, error) {
 	sectionValidator := NewSectionValidator(markdown)
 	validator.validators = []Validator{
 		sectionValidator,
-		NewFileValidator(absReadmePath),
+		NewFileValidator(absReadmePath, absModulePath),
 		NewURLValidator(markdown),
 		NewTerraformDefinitionValidator(markdown, terraform),
 		NewItemValidator(markdown, terraform, "Variables", "variable", []string{"Required Inputs", "Optional Inputs"}, "variables.tf"),
@@ -64,7 +87,6 @@ func NewReadmeValidator(readmePath string) (*ReadmeValidator, error) {
 }
 
 // Validate runs all validators and collects their errors.
-// Returns an empty slice if validation is successful.
 func (rv *ReadmeValidator) Validate() []error {
 	var allErrors []error
 	for _, validator := range rv.validators {

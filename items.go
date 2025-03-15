@@ -42,8 +42,8 @@ func (iv *ItemValidator) Validate() []error {
 		return nil
 	}
 
-	// Extract items from Terraform file
-	filePath := filepath.Join(iv.terraform.workspace, "caller", iv.fileName)
+	// Extract items from Terraform file directly in the module directory
+	filePath := filepath.Join(iv.terraform.workspace, iv.fileName)
 	tfItems, err := iv.terraform.ExtractItems(filePath, iv.blockType)
 	if err != nil {
 		return []error{err}

@@ -37,6 +37,8 @@ func NewReadmeValidator(readmePath ...string) (*ReadmeValidator, error) {
 		finalReadmePath = os.Getenv("README_PATH")
 		if finalReadmePath == "" {
 			return nil, fmt.Errorf("README path not provided and README_PATH environment variable not set")
+		} else {
+			fmt.Printf("using environment variable README_PATH: %s\n", finalReadmePath)
 		}
 	}
 

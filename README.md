@@ -34,6 +34,23 @@ func TestTerraformDocumentation(t *testing.T) {
 
 within github actions:
 
+```go
+func TestReadmeValidationExplicit(t *testing.T) {
+
+	validator, err := markparsr.NewReadmeValidator()
+	if err != nil {
+		t.Fatalf("Failed to create validator: %v", err)
+	}
+
+	errors := validator.Validate()
+	if len(errors) > 0 {
+		for _, err := range errors {
+			t.Errorf("Validation error: %v", err)
+		}
+	}
+}
+```
+
 ```yaml
   - name: run global tests
     working-directory: called/tests

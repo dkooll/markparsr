@@ -12,11 +12,10 @@ go get github.com/azyphon/markparsr
 
 ## Usage
 
-as a test:
+as a local test with a relative path:
 
 ```go
 func TestTerraformDocumentation(t *testing.T) {
-    // For local testing with a relative path
     validator, err := markparsr.NewReadmeValidator("../README.md")
     if err != nil {
         t.Fatalf("Failed to create validator: %v", err)

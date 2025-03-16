@@ -20,33 +20,37 @@ type ReadmeValidator struct {
 	validators []Validator
 }
 
-// NewReadmeValidator creates a validator for the specified README file.
-// The optional modulePath parameter specifies where to find Terraform files.
-// Without modulePath, the README's directory is used.
-// Environment variables README_PATH and MODULE_PATH take precedence when set.
-func NewReadmeValidator(readmePath string, modulePath ...string) (*ReadmeValidator, error) {
-	// Check for README_PATH override
-	if envPath := os.Getenv("README_PATH"); envPath != "" {
-		readmePath = envPath
+// NewReadmeValidator creates a validator for Terraform module documentation.
+// The validator needs to know where to find the README.md file.
+// You can provide a path as a parameter. If you don't provide a path,
+// the validator will look for the README_PATH environment variable.
+// The validator will look for Terraform files in the same directory as the README.
+// If you set the MODULE_PATH environment variable, it will override the Terraform files location.
+func NewReadmeValidator(readmePath ...string) (*ReadmeValidator, error) {
+	var finalReadmePath string
+
+	// Determine the README path
+	if len(readmePath) > 0 && readmePath[0] != "" {
+		finalReadmePath = readmePath[0]
+	} else {
+		// Look for environment variable
+		finalReadmePath = os.Getenv("README_PATH")
+		if finalReadmePath == "" {
+			return nil, fmt.Errorf("README path not provided and README_PATH environment variable not set")
+		}
 	}
 
-	absReadmePath, err := filepath.Abs(readmePath)
+	absReadmePath, err := filepath.Abs(finalReadmePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get absolute path for README: %w", err)
 	}
 
-	// Determine the module path
-	var moduleDir string
+	// Always use the README's directory for module path
+	moduleDir := filepath.Dir(absReadmePath)
 
-	// Check for MODULE_PATH override first
+	// Allow MODULE_PATH environment variable to override
 	if envModulePath := os.Getenv("MODULE_PATH"); envModulePath != "" {
 		moduleDir = envModulePath
-	} else if len(modulePath) > 0 && modulePath[0] != "" {
-		// Use explicitly provided module path if available
-		moduleDir = modulePath[0]
-	} else {
-		// Default to README's directory
-		moduleDir = filepath.Dir(absReadmePath)
 	}
 
 	absModulePath, err := filepath.Abs(moduleDir)

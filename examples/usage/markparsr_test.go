@@ -5,10 +5,8 @@ import (
 	"testing"
 )
 
-// TestReadmeValidationExplicit validates Terraform module documentation.
-// When running locally, this test uses the path specified in the readmePath variable.
-// When running in CI/CD, environment variables README_PATH and MODULE_PATH will override
-// the paths if they are set.
+// TestReadmeValidationExplicit validates that Terraform documentation matches the code.
+// It uses a local path for testing, but CI/CD can override this with README_PATH.
 func TestReadmeValidationExplicit(t *testing.T) {
 	readmePath := "../module/README.md"
 

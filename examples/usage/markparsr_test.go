@@ -10,6 +10,7 @@ import (
 func TestReadmeValidationExplicit(t *testing.T) {
 	readmePath := "../module/README.md"
 
+	// Use default autodetect format
 	validator, err := markparsr.NewReadmeValidator(readmePath)
 	if err != nil {
 		t.Fatalf("Failed to create validator: %v", err)

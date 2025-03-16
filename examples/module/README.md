@@ -2,6 +2,36 @@
 
 This terraform module simplifies the process of creating and managing virtual network resources on azure with configurable options for network topology, subnets, security groups, and more to ensure a secure and efficient environment for resource communication in the cloud.
 
+## Goals
+
+The main objective is to create a more logic data structure, achieved by combining and grouping related resources together in a complex object.
+
+The structure of the module promotes reusability. It's intended to be a repeatable component, simplifying the process of building diverse workloads and platform accelerators consistently.
+
+A primary goal is to utilize keys and values in the object that correspond to the REST API's structure. This enables us to carry out iterations, increasing its practical value as time goes on.
+
+A last key goal is to separate logic from configuration in the module, thereby enhancing its scalability, ease of customization, and manageability.
+
+## Non-Goals
+
+These modules are not intended to be complete, ready-to-use solutions; they are designed as components for creating your own patterns.
+
+They are not tailored for a single use case but are meant to be versatile and applicable to a range of scenarios.
+
+Security standardization is applied at the pattern level, while the modules include default values based on best practices but do not enforce specific security standards.
+
+End-to-end testing is not conducted on these modules, as they are individual components and do not undergo the extensive testing reserved for complete patterns or solutions.
+
+## Features
+
+- optional network security group for each subnet, capable of managing multiple rules
+- association of a single network security group with multiple subnets
+- support for multiple service endpoints and delegations, including actions
+- utilization of terratest for robust validation
+- route table support with multiple user defined routes
+- association of multiple subnets with a single route table
+- optional virtual network peering for enhanced network integration
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
@@ -186,21 +216,34 @@ Description: contains virtual network configuration
 Description: contains subnets configuration
 <!-- END_TF_DOCS -->
 
-## Goals
-
-For more information, please see our [goals and non-goals](./GOALS.md).
-
 ## Testing
 
 For more information, please see our testing [guidelines](./TESTING.md)
 
 ## Notes
 
-This is an experimental module for private use.
+Using a dedicated module, we've developed a naming convention for resources that's based on specific regular expressions for each type, ensuring correct abbreviations and offering flexibility with multiple prefixes and suffixes.
 
-A naming convention is developed using regular expressions to ensure correct abbreviations, with flexibility for multiple prefixes and suffixes.
-
-Full usage examples and integrations with dependency modules are in the examples directory.
+Full examples detailing all usages, along with integrations with dependency modules, are located in the examples directory.
 
 To update the module's documentation run `make doc`
 
+## Authors
+
+Module is maintained by [these awesome contributors](https://github.com/cloudnationhq/terraform-azure-vnet/graphs/contributors).
+
+## Contributing
+
+We welcome contributions from the community! Whether it's reporting a bug, suggesting a new feature, or submitting a pull request, your input is highly valued.
+
+For more information, please see our contribution [guidelines](https://github.com/CloudNationHQ/terraform-azure-vnet/blob/main/CONTRIBUTING.md).
+
+## License
+
+MIT Licensed. See [LICENSE](https://github.com/cloudnationhq/terraform-azure-vnet/blob/main/LICENSE) for full details.
+
+## References
+
+- [Documentation](https://learn.microsoft.com/en-us/azure/virtual-network/)
+- [Rest Api](https://learn.microsoft.com/en-us/rest/api/virtual-network/)
+- [Rest Api Specs](https://github.com/Azure/azure-rest-api-specs/blob/main/specification/network/resource-manager/Microsoft.Network/stable/2023-04-01/virtualNetwork.json)

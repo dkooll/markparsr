@@ -12,6 +12,8 @@ go get github.com/azyphon/markparsr
 
 ## Usage
 
+as a test:
+
 ```go
 func TestTerraformDocumentation(t *testing.T) {
     // For local testing with a relative path
@@ -30,8 +32,9 @@ func TestTerraformDocumentation(t *testing.T) {
 }
 ```
 
+within github actions:
+
 ```yaml
-# GitHub Actions example
 - name: Validate Documentation
   run: go test -v ./tests
   env:
@@ -40,7 +43,7 @@ func TestTerraformDocumentation(t *testing.T) {
 
 ## Features
 
-The markdown README is validated to contain all required sections from terraform-docs output, plus any additional optional content.
+The markdown README is validated to contain all required sections from [terraform-docs](https://terraform-docs.io/) output, plus any additional optional content.
 
 It ensures all resources in your HCL Terraform code are properly documented in the README.
 
@@ -61,3 +64,5 @@ The `MODULE_PATH` environment variable is used if set.
 The directory containing the README file is used otherwise.
 
 This approach supports both local testing and CI/CD environments with the same code.
+
+For now only [document](https://github.com/terraform-docs/terraform-docs/blob/master/docs/reference/markdown-document.md) output is support when using terraform-docs.

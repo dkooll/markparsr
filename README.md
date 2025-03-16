@@ -6,7 +6,7 @@ This go package analyzes both HCL files and markdown to identify gaps or inconsi
 
 ## Installation
 
-```bash
+```zsh
 go get github.com/azyphon/markparsr
 ```
 
@@ -35,10 +35,11 @@ func TestTerraformDocumentation(t *testing.T) {
 within github actions:
 
 ```yaml
-- name: Validate Documentation
-  run: go test -v ./tests
-  env:
-    README_PATH: "${{ github.workspace }}/README.md"
+  - name: run global tests
+    working-directory: called/tests
+    run: go test -v ./...
+    env:
+      README_PATH: "${{ github.workspace }}/caller/README.md"
 ```
 
 ## Features

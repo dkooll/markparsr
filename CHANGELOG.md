@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.0](https://github.com/azyphon/markparsr/compare/v1.12.0...v1.13.0) (2025-03-16)
+
+
+### Features
+
+* improve path handling for readme validation ([#30](https://github.com/azyphon/markparsr/issues/30)) ([f67f903](https://github.com/azyphon/markparsr/commit/f67f90346e2cba33cbd17510f0e7798dee2c73f0))
+
 ## [1.12.0](https://github.com/azyphon/markparsr/compare/v1.11.0...v1.12.0) (2025-03-15)
 
 

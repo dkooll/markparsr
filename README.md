@@ -15,28 +15,35 @@ go get github.com/azyphon/markparsr
 as a local test with a relative path:
 
 ```go
-func TestTerraformDocumentation(t *testing.T) {
-    validator, err := markparsr.NewReadmeValidator("../README.md")
-    if err != nil {
-        t.Fatalf("Failed to create validator: %v", err)
-    }
+func TestReadmeValidationExplicit(t *testing.T) {
+	validator, err := markparsr.NewReadmeValidator(
+		markparsr.WithRelativeReadmePath("../module/README.md"),
+		markparsr.WithAdditionalSections("Goals", "Testing", "Notes"),
+		markparsr.WithAdditionalFiles("GOALS.md", "TESTING.md"),
+	)
 
-    errors := validator.Validate()
-    if len(errors) > 0 {
-        t.Errorf("Found documentation errors:")
-        for _, err := range errors {
-            t.Errorf("  - %v", err)
-        }
-    }
+	if err != nil {
+		t.Fatalf("Failed to create validator: %v", err)
+	}
+
+	errors := validator.Validate()
+	if len(errors) > 0 {
+		for _, err := range errors {
+			t.Errorf("Validation error: %v", err)
+		}
+	}
 }
 ```
 
 within github actions:
 
 ```go
-func TestReadmeValidationExplicit(t *testing.T) {
+func TestReadmeValidation(t *testing.T) {
+	validator, err := markparsr.NewReadmeValidator(
+		markparsr.WithAdditionalSections("Goals", "Testing", "Notes"),
+		markparsr.WithAdditionalFiles("GOALS.md", "TESTING.md"),
+	)
 
-	validator, err := markparsr.NewReadmeValidator()
 	if err != nil {
 		t.Fatalf("Failed to create validator: %v", err)
 	}
@@ -60,7 +67,7 @@ func TestReadmeValidationExplicit(t *testing.T) {
 
 ## Features
 
-The markdown README is validated to contain all required sections from [terraform-docs](https://terraform-docs.io/) output, plus any additional optional content.
+The markdown README is validated to contain all required sections from [terraform-docs](https://terraform-docs.io/) output, plus any additional optional content using the functional options pattern.
 
 Automatically detects and supports both document and table output formats from terraform-docs.
 

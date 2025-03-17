@@ -69,7 +69,7 @@ func TestReadmeValidation(t *testing.T) {
 
 The markdown README is validated to contain all required sections from [terraform-docs](https://terraform-docs.io/) output, plus any additional optional content using the functional options pattern.
 
-Automatically detects and supports both document and table output formats from terraform-docs.
+Automatically detects and supports both document and table output formats from terraform-docs using a sophisticated scoring system with format confidence reporting.
 
 It ensures all resources in your HCL Terraform code are properly documented in the README.
 
@@ -85,8 +85,5 @@ Urls in the markdown documentation are validated for accessibility.
 
 The `README_PATH` environment variable takes highest priority if set.
 The path provided to NewReadmeValidator() is used if no environment variable exists.
-
-The `MODULE_PATH` environment variable is used if set.
-The directory containing the README file is used otherwise.
 
 This approach supports both local testing and CI/CD environments with the same code.

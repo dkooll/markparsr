@@ -29,6 +29,12 @@ type sectionConfig struct {
 	optional []string
 }
 
+// FormatScore represents a score for a particular format detection
+type FormatScore struct {
+	Score       int
+	SectionHits map[string]string // Maps section name to detected format
+}
+
 // MarkdownContent parses and analyzes Terraform module documentation
 type MarkdownContent struct {
 	data          string
@@ -88,44 +94,217 @@ func NewMarkdownContent(data string, format MarkdownFormat) *MarkdownContent {
 
 	// Auto-detect format if not specified
 	if format == FormatAuto {
-		mc.detectFormat()
-		fmt.Printf("Auto-detected markdown format: %s\n", mc.format)
+		documentScore, tableScore, detectedFormat := mc.detectFormatHeuristic()
+		mc.format = detectedFormat
+
+		// Calculate confidence as a percentage
+		totalScore := documentScore + tableScore
+		var confidence float64
+		if totalScore > 0 {
+			if detectedFormat == FormatDocument {
+				confidence = float64(documentScore) / float64(totalScore) * 100
+			} else {
+				confidence = float64(tableScore) / float64(totalScore) * 100
+			}
+		} else {
+			confidence = 50.0 // No clear indicators, 50% confidence
+		}
+
+		// Always print the detection result with confidence
+		fmt.Printf("Auto-detected markdown format: %s (confidence: %.1f%%)\n", mc.format, confidence)
 	}
 
 	return mc
 }
 
 // detectFormat determines whether the markdown uses document or table style
-func (mc *MarkdownContent) detectFormat() {
-	// Default to document style
-	mc.format = FormatDocument
+// using the heuristic approach
+// detectFormatHeuristic determines markdown format using a scoring system
+// Returns document score, table score, and the detected format
+func (mc *MarkdownContent) detectFormatHeuristic() (int, int, MarkdownFormat) {
+	// Create scoring structures
+	documentScore := &FormatScore{
+		Score:       0,
+		SectionHits: make(map[string]string),
+	}
 
-	// Key sections to check for tables
-	sections := []string{"Inputs", "Required Inputs", "Optional Inputs",
-		"Outputs", "Resources", "Requirements", "Providers"}
+	tableScore := &FormatScore{
+		Score:       0,
+		SectionHits: make(map[string]string),
+	}
 
-	// Look for tables under any of these section headings
+	// Key sections to analyze
+	sectionsToCheck := []string{
+		"Inputs", "Required Inputs", "Optional Inputs",
+		"Outputs", "Resources", "Requirements", "Providers",
+	}
+
+	// Check each section independently
+	for _, sectionName := range sectionsToCheck {
+		format := mc.analyzeSection(sectionName)
+		switch format {
+		case FormatDocument:
+			documentScore.Score++
+			documentScore.SectionHits[sectionName] = "document"
+		case FormatTable:
+			tableScore.Score++
+			tableScore.SectionHits[sectionName] = "table"
+		}
+	}
+
+	// Check for L3 headings (strong indicator of document format)
+	hasL3Headings := mc.hasLevel3Headings()
+	if hasL3Headings {
+		documentScore.Score += 2 // Stronger weight for L3 headings
+	}
+
+	// If there's a tie or no clear signal, apply secondary heuristics
+	if documentScore.Score == tableScore.Score {
+		// Check for code blocks with terraform types (more common in document format)
+		if mc.hasTypeCodeBlocks() {
+			documentScore.Score++
+		}
+
+		// Check for table-like structures (more common in table format)
+		if mc.hasMultipleTableStructures() {
+			tableScore.Score++
+		}
+	}
+
+	// Determine winner
+	var detectedFormat MarkdownFormat
+	if documentScore.Score > tableScore.Score {
+		detectedFormat = FormatDocument
+	} else if tableScore.Score > documentScore.Score {
+		detectedFormat = FormatTable
+	} else {
+		// If still tied, default to document format
+		detectedFormat = FormatDocument
+	}
+
+	return documentScore.Score, tableScore.Score, detectedFormat
+}
+
+// analyzeSection checks a specific section for format indicators
+func (mc *MarkdownContent) analyzeSection(sectionName string) MarkdownFormat {
+	// First, try to find the section
+	var sectionHeading *ast.Heading
+
 	ast.WalkFunc(mc.rootNode, func(node ast.Node, entering bool) ast.WalkStatus {
 		if !entering {
 			return ast.GoToNext
 		}
 
 		if heading, ok := node.(*ast.Heading); ok && heading.Level == 2 {
-			text := strings.TrimSpace(mc.extractText(heading))
-			for _, section := range sections {
-				if strings.EqualFold(text, section) {
-					// Check if the next element is a table
-					next := getNextSibling(heading)
-					if _, isTable := next.(*ast.Table); isTable {
-						mc.format = FormatTable
-						return ast.SkipChildren
-					}
-					break
-				}
+			headingText := strings.TrimSpace(mc.extractText(heading))
+			if strings.EqualFold(headingText, sectionName) {
+				sectionHeading = heading
+				return ast.SkipChildren
 			}
 		}
 		return ast.GoToNext
 	})
+
+	if sectionHeading == nil {
+		// Section not found
+		return ""
+	}
+
+	// Look at what follows the heading
+	next := getNextSibling(sectionHeading)
+	if next == nil {
+		return ""
+	}
+
+	// Check for table (strong indicator of table format)
+	if _, isTable := next.(*ast.Table); isTable {
+		return FormatTable
+	}
+
+	// Check for paragraph followed by L3 heading (indicator of document format)
+	if _, isPara := next.(*ast.Paragraph); isPara {
+		// See if there's a L3 heading after this
+		afterPara := getNextSibling(next)
+		if afterPara != nil {
+			if heading, ok := afterPara.(*ast.Heading); ok && heading.Level == 3 {
+				return FormatDocument
+			}
+		}
+	}
+
+	// Check directly for L3 heading (strong indicator of document format)
+	if heading, ok := next.(*ast.Heading); ok && heading.Level == 3 {
+		return FormatDocument
+	}
+
+	// If no clear indicators, return empty string
+	return ""
+}
+
+// hasLevel3Headings checks if there are any level 3 headings in the document
+func (mc *MarkdownContent) hasLevel3Headings() bool {
+	hasL3 := false
+
+	ast.WalkFunc(mc.rootNode, func(node ast.Node, entering bool) ast.WalkStatus {
+		if !entering {
+			return ast.GoToNext
+		}
+
+		if heading, ok := node.(*ast.Heading); ok && heading.Level == 3 {
+			hasL3 = true
+			return ast.SkipChildren
+		}
+		return ast.GoToNext
+	})
+
+	return hasL3
+}
+
+// hasTypeCodeBlocks checks for code blocks with terraform types
+func (mc *MarkdownContent) hasTypeCodeBlocks() bool {
+	hasTypeBlocks := false
+
+	ast.WalkFunc(mc.rootNode, func(node ast.Node, entering bool) ast.WalkStatus {
+		if !entering {
+			return ast.GoToNext
+		}
+
+		if codeBlock, ok := node.(*ast.CodeBlock); ok {
+			codeText := string(codeBlock.Literal)
+			if strings.Contains(codeText, "object(") ||
+				strings.Contains(codeText, "list(") ||
+				strings.Contains(codeText, "map(") {
+				hasTypeBlocks = true
+				return ast.SkipChildren
+			}
+		}
+		return ast.GoToNext
+	})
+
+	return hasTypeBlocks
+}
+
+// hasMultipleTableStructures checks if there are multiple tables in the document
+func (mc *MarkdownContent) hasMultipleTableStructures() bool {
+	tableCount := 0
+
+	ast.WalkFunc(mc.rootNode, func(node ast.Node, entering bool) ast.WalkStatus {
+		if !entering {
+			return ast.GoToNext
+		}
+
+		if _, ok := node.(*ast.Table); ok {
+			tableCount++
+		}
+		return ast.GoToNext
+	})
+
+	return tableCount > 1
+}
+
+// GetContent returns the full markdown content
+func (mc *MarkdownContent) GetContent() string {
+	return mc.data
 }
 
 // HasSection checks if a section exists in the markdown
@@ -545,8 +724,8 @@ func (mc *MarkdownContent) validateColumns(sectionName string, required, optiona
 	var errors []error
 
 	// Create maps for valid columns
-	requiredLower := make(map[string]string)  // lowercase → original
-	optionalLower := make(map[string]string)  // lowercase → original
+	requiredLower := make(map[string]string) // lowercase → original
+	optionalLower := make(map[string]string) // lowercase → original
 
 	for _, col := range required {
 		requiredLower[strings.ToLower(col)] = col
@@ -556,8 +735,8 @@ func (mc *MarkdownContent) validateColumns(sectionName string, required, optiona
 	}
 
 	// Track which required columns were found, including close matches
-	foundRequiredExact := make(map[string]bool)  // Exact matches by lowercase name
-	foundRequiredClose := make(map[string]bool)  // Close matches (typos) by lowercase name
+	foundRequiredExact := make(map[string]bool) // Exact matches by lowercase name
+	foundRequiredClose := make(map[string]bool) // Close matches (typos) by lowercase name
 
 	// First pass: identify typos and exact matches
 	for _, actual := range actual {
@@ -752,12 +931,4 @@ func min(a, b, c int) int {
 		return b
 	}
 	return c
-}
-
-// max returns the larger of two integers
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
 }

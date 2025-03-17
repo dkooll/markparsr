@@ -10,11 +10,12 @@ import (
 type SectionValidator struct {
 	content            *MarkdownContent
 	requiredSections   []string
-	additionalSections []string // Optional but validated if present
+	additionalSections []string // Additional sections that should exist and be validated
 }
 
 // NewSectionValidator creates a validator for standard Terraform document sections
-func NewSectionValidator(content *MarkdownContent) *SectionValidator {
+// additionalSections specifies additional sections that should exist and be validated
+func NewSectionValidator(content *MarkdownContent, additionalSections []string) *SectionValidator {
 	// Required sections for both formats
 	requiredSections := []string{
 		"Resources", "Providers", "Requirements",
@@ -28,12 +29,6 @@ func NewSectionValidator(content *MarkdownContent) *SectionValidator {
 		requiredSections = append(requiredSections, "Required Inputs", "Optional Inputs", "Outputs")
 	}
 
-	// Additional sections that should be validated if present but aren't required
-	additionalSections := []string{
-		"Goals", "Testing", "Features", "License", "Authors", "Notes", "Contributing",
-		"References", "Non-Goals",
-	}
-
 	return &SectionValidator{
 		content:            content,
 		requiredSections:   requiredSections,
@@ -41,69 +36,61 @@ func NewSectionValidator(content *MarkdownContent) *SectionValidator {
 	}
 }
 
-// Validate checks that all required sections are present and spelled correctly
+// Validate checks that all required and additional sections are present and spelled correctly
 func (sv *SectionValidator) Validate() []error {
 	var allErrors []error
 	foundSections := sv.content.GetAllSections()
 
 	// Track which sections have been handled already
 	handledSections := make(map[string]bool)
-	missingRequired := make(map[string]bool)
 
-	// Map of likely misspellings to correct names
-	misspellings := make(map[string]string)
+	// Track sections that are required but missing
+	missingSections := make(map[string]bool)
 
-	// First identify misspellings of required sections
-	for _, foundSection := range foundSections {
-		// Skip if already processed
-		if handledSections[foundSection] {
+	// First check all required sections
+	for _, requiredSection := range sv.requiredSections {
+		// Check if the required section exists exactly
+		if slices.Contains(foundSections, requiredSection) {
+			handledSections[requiredSection] = true
 			continue
 		}
 
-		// Check if this section is a misspelling of a required section
-		for _, requiredSection := range sv.requiredSections {
-			if foundSection != requiredSection && isSimilarSection(foundSection, requiredSection) {
-				misspellings[foundSection] = requiredSection
-				missingRequired[requiredSection] = true
-				handledSections[foundSection] = true
+		// If not found exactly, check for misspellings
+		misspellingFound := false
+		for _, foundSection := range foundSections {
+			if !handledSections[foundSection] && isSimilarSection(foundSection, requiredSection) {
 				allErrors = append(allErrors, fmt.Errorf("section '%s' appears to be misspelled (should be '%s')",
 					foundSection, requiredSection))
+				handledSections[foundSection] = true
+				misspellingFound = true
 				break
 			}
 		}
-	}
 
-	// Check for missing required sections
-	for _, requiredSection := range sv.requiredSections {
-		// Skip if already marked as missing due to a misspelling
-		if missingRequired[requiredSection] {
-			continue
-		}
-
-		if !slices.Contains(foundSections, requiredSection) {
+		// If no misspelling found, mark as missing
+		if !misspellingFound {
+			missingSections[requiredSection] = true
 			allErrors = append(allErrors, fmt.Errorf("required section missing: '%s'", requiredSection))
-		} else {
-			handledSections[requiredSection] = true
 		}
 	}
 
-	// Check for other misspellings or unexpected sections
-	for _, foundSection := range foundSections {
-		// Skip if already handled
-		if handledSections[foundSection] {
+	// Now check all additional sections - these should exist too
+	for _, additionalSection := range sv.additionalSections {
+		// Skip if already processed as part of required sections
+		if handledSections[additionalSection] || missingSections[additionalSection] {
 			continue
 		}
 
-		// Check if this is a known additional section
-		if slices.Contains(sv.additionalSections, foundSection) {
-			handledSections[foundSection] = true
+		// Check if the additional section exists exactly
+		if slices.Contains(foundSections, additionalSection) {
+			handledSections[additionalSection] = true
 			continue
 		}
 
-		// Check if this is a misspelling of an additional section
+		// If not found exactly, check for misspellings
 		misspellingFound := false
-		for _, additionalSection := range sv.additionalSections {
-			if isSimilarSection(foundSection, additionalSection) {
+		for _, foundSection := range foundSections {
+			if !handledSections[foundSection] && isSimilarSection(foundSection, additionalSection) {
 				allErrors = append(allErrors, fmt.Errorf("section '%s' appears to be misspelled (should be '%s')",
 					foundSection, additionalSection))
 				handledSections[foundSection] = true
@@ -112,12 +99,14 @@ func (sv *SectionValidator) Validate() []error {
 			}
 		}
 
-		// If not a misspelling of anything known, report as unexpected
+		// If no misspelling found, mark as missing
 		if !misspellingFound {
-			allErrors = append(allErrors, fmt.Errorf("unexpected section: '%s'", foundSection))
-			handledSections[foundSection] = true
+			allErrors = append(allErrors, fmt.Errorf("additional section missing: '%s'", additionalSection))
 		}
 	}
+
+	// Any remaining found sections that haven't been handled are ignored
+	// (they can exist in any form and won't cause validation errors)
 
 	// For table format, also validate table columns
 	if sv.content.format == FormatTable {

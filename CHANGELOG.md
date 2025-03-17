@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.0](https://github.com/azyphon/markparsr/compare/v1.16.0...v1.17.0) (2025-03-17)
+
+
+### Features
+
+* implement functional options pattern ([#38](https://github.com/azyphon/markparsr/issues/38)) ([2c5035c](https://github.com/azyphon/markparsr/commit/2c5035c7c30ec58cb7a546eb7800001fc8fb9c33))
+
 ## [1.16.0](https://github.com/azyphon/markparsr/compare/v1.15.0...v1.16.0) (2025-03-17)
 
 

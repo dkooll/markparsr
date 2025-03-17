@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.18.0](https://github.com/azyphon/markparsr/compare/v1.17.0...v1.18.0) (2025-03-17)
+
+
+### Features
+
+* add terraform docs markdown formation detection with confidence scoring ([#40](https://github.com/azyphon/markparsr/issues/40)) ([113667d](https://github.com/azyphon/markparsr/commit/113667d88009c80ceca1a14822f36f9ca2d5fe4d))
+
 ## [1.17.0](https://github.com/azyphon/markparsr/compare/v1.16.0...v1.17.0) (2025-03-17)
 
 

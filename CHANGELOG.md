@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.0](https://github.com/azyphon/markparsr/compare/v1.14.0...v1.15.0) (2025-03-16)
+
+
+### Features
+
+* add autodetection support for tables and document markdown styles ([#34](https://github.com/azyphon/markparsr/issues/34)) ([26f48f1](https://github.com/azyphon/markparsr/commit/26f48f1886378c8df9dbfb7a18158f7d0e88ebeb))
+
 ## [1.14.0](https://github.com/azyphon/markparsr/compare/v1.13.0...v1.14.0) (2025-03-16)
 
 

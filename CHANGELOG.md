@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.0](https://github.com/azyphon/markparsr/compare/v1.15.0...v1.16.0) (2025-03-17)
+
+
+### Features
+
+* add custom validation for addtional sections and files ([#36](https://github.com/azyphon/markparsr/issues/36)) ([1f217f9](https://github.com/azyphon/markparsr/commit/1f217f9fcabb7e94f0025a716fdf5f13b3a0dc5f))
+
 ## [1.15.0](https://github.com/azyphon/markparsr/compare/v1.14.0...v1.15.0) (2025-03-16)
 
 

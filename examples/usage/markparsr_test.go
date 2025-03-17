@@ -8,16 +8,14 @@ import (
 // TestReadmeValidationExplicit validates that Terraform documentation matches the code.
 // It uses a local path for testing, but CI/CD can override this with README_PATH.
 func TestReadmeValidationExplicit(t *testing.T) {
-	readmePath := "../module/README.md"
 
-	// Create custom options with specific additional sections to validate
-	options := markparsr.DefaultOptions()
+	// Use functional options pattern
+	validator, err := markparsr.NewReadmeValidator(
+		markparsr.WithRelativeReadmePath("../module/README.md"),
+		markparsr.WithAdditionalSections("Goals", "Testing", "Notes"),
+		markparsr.WithAdditionalFiles("GOALS.md", "TESTING.md"),
+	)
 
-	options.AdditionalSections = []string{"Goals", "Testing", "Notes"}
-	options.AdditionalFiles = []string{"GOALS.md", "TESTING.md"}
-
-	// Use options with autodetect format and additional sections
-	validator, err := markparsr.NewReadmeValidatorWithOptions(options, readmePath)
 	if err != nil {
 		t.Fatalf("Failed to create validator: %v", err)
 	}

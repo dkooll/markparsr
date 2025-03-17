@@ -62,6 +62,8 @@ func TestReadmeValidationExplicit(t *testing.T) {
 
 The markdown README is validated to contain all required sections from [terraform-docs](https://terraform-docs.io/) output, plus any additional optional content.
 
+Automatically detects and supports both document and table output formats from terraform-docs.
+
 It ensures all resources in your HCL Terraform code are properly documented in the README.
 
 It checks that all resources mentioned in the README actually exist in your terraform code.
@@ -81,5 +83,3 @@ The `MODULE_PATH` environment variable is used if set.
 The directory containing the README file is used otherwise.
 
 This approach supports both local testing and CI/CD environments with the same code.
-
-For now only [document](https://github.com/terraform-docs/terraform-docs/blob/master/docs/reference/markdown-document.md) output is support when using terraform-docs.

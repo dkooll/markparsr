@@ -16,12 +16,22 @@ type Validator interface {
 type Options struct {
 	// Format specifies whether the terraform-docs output is in document or table format
 	Format MarkdownFormat
+
+	// AdditionalSections specifies section names that should exist in the markdown
+	// If empty, only the required sections will be validated.
+	AdditionalSections []string
+
+	// AdditionalFiles specifies additional files that should exist
+	// These can be relative paths (to the module directory) or absolute paths
+	AdditionalFiles []string
 }
 
 // DefaultOptions provides sensible defaults for the validator
 func DefaultOptions() Options {
 	return Options{
-		Format: FormatAuto,
+		Format:             FormatAuto,
+		AdditionalSections: []string{},
+		AdditionalFiles:    []string{},
 	}
 }
 
@@ -103,8 +113,8 @@ func NewReadmeValidatorWithOptions(options Options, readmePath ...string) (*Read
 
 	// Initialize all validators
 	validator.validators = []Validator{
-		NewSectionValidator(markdown),
-		NewFileValidator(readmeFile, absModulePath),
+		NewSectionValidator(markdown, options.AdditionalSections),
+		NewFileValidator(readmeFile, absModulePath, options.AdditionalFiles),
 		NewURLValidator(markdown),
 		NewTerraformDefinitionValidator(markdown, terraform),
 		NewItemValidator(markdown, terraform, "Variables", "variable", []string{"Required Inputs", "Optional Inputs"}, "variables.tf"),

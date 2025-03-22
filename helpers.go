@@ -6,54 +6,41 @@ import (
 )
 
 // compareTerraformAndMarkdown identifies discrepancies between terraform code and
-// markdown documentation. It handles both full resource names (azurerm_resource_group.example)
-// and resource types (azurerm_resource_group), considering a match if either form is documented.
+// markdown documentation. It reports ALL instances of resources that are missing
+// from either side, without any deduplication or special treatment for resource types.
 func compareTerraformAndMarkdown(tfItems, mdItems []string, itemType string) []error {
-	errors := make([]error, 0, len(tfItems)+len(mdItems))
-	tfSet := make(map[string]bool, len(tfItems)*2)
-	mdSet := make(map[string]bool, len(mdItems)*2)
-	reported := make(map[string]bool, len(tfItems)+len(mdItems))
+	errors := make([]error, 0)
 
-	getFullName := func(items []string, baseName string) string {
-		for _, item := range items {
-			if strings.HasPrefix(item, baseName+".") {
-				return item
-			}
-		}
-		return baseName
-	}
+	// Create maps for exact matching of full resource names
+	tfFullNames := make(map[string]bool)
+	mdFullNames := make(map[string]bool)
 
-	// Add both full names and base types to the sets
+	// Split items into full names (with dots) and base types
 	for _, item := range tfItems {
-		tfSet[item] = true
-		baseName := strings.Split(item, ".")[0]
-		tfSet[baseName] = true
+		if strings.Contains(item, ".") {
+			tfFullNames[item] = true
+		}
 	}
 
 	for _, item := range mdItems {
-		mdSet[item] = true
-		baseName := strings.Split(item, ".")[0]
-		mdSet[baseName] = true
-	}
-
-	// Find items in terraform but not in markdown
-	for _, tfItem := range tfItems {
-		baseName := strings.Split(tfItem, ".")[0]
-		if !mdSet[tfItem] && !mdSet[baseName] && !reported[baseName] {
-			fullName := getFullName(tfItems, baseName)
-			errors = append(errors, fmt.Errorf("%s in Terraform but missing in markdown: %s", itemType, fullName))
-			reported[baseName] = true
+		if strings.Contains(item, ".") {
+			mdFullNames[item] = true
 		}
 	}
 
-	// Find items in markdown but not in terraform
-	for _, mdItem := range mdItems {
-		baseName := strings.Split(mdItem, ".")[0]
-		if !tfSet[mdItem] && !tfSet[baseName] && !reported[baseName] {
-			fullName := getFullName(mdItems, baseName)
-			errors = append(errors, fmt.Errorf("%s in markdown but missing in Terraform: %s", itemType, fullName))
-			reported[baseName] = true
+	// Find terraform resources missing from markdown
+	for tfItem := range tfFullNames {
+		if !mdFullNames[tfItem] {
+			errors = append(errors, fmt.Errorf("%s in Terraform but missing in markdown: %s", itemType, tfItem))
 		}
 	}
+
+	// Find markdown resources missing from terraform
+	for mdItem := range mdFullNames {
+		if !tfFullNames[mdItem] {
+			errors = append(errors, fmt.Errorf("%s in markdown but missing in Terraform: %s", itemType, mdItem))
+		}
+	}
+
 	return errors
 }

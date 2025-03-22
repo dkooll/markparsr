@@ -868,9 +868,18 @@ func getNextSibling(node ast.Node) ast.Node {
 	return nil
 }
 
-// hasProviderPrefix checks if a string has the azurerm_ prefix
+// hasProviderPrefix checks if a string has a recognized provider prefix
 func hasProviderPrefix(s string) bool {
-	return strings.HasPrefix(strings.ToLower(s), "azurerm_")
+	s = strings.ToLower(s)
+	commonPrefixes := []string{
+		"azurerm_", "random_",
+	}
+	for _, prefix := range commonPrefixes {
+		if strings.HasPrefix(s, prefix) {
+			return true
+		}
+	}
+	return false
 }
 
 // addUnique adds a string to a slice if it's not already present

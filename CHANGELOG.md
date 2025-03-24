@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.0](https://github.com/azyphon/markparsr/compare/v1.18.0...v1.19.0) (2025-03-22)
+
+
+### Features
+
+* add random provider support and fix deduplication in symbolic names ([#42](https://github.com/azyphon/markparsr/issues/42)) ([b960494](https://github.com/azyphon/markparsr/commit/b9604940f5c0f70ae36f6305367357ea9ac713dd))
+
 ## [1.18.0](https://github.com/azyphon/markparsr/compare/v1.17.0...v1.18.0) (2025-03-17)
 
 

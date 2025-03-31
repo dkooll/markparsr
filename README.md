@@ -1,4 +1,4 @@
-# markparsr [![Go Reference](https://pkg.go.dev/badge/github.com/azyphon/markparsr.svg)](https://pkg.go.dev/github.com/azyphon/markparsr)
+# markparsr [![Go Reference](https://pkg.go.dev/badge/github.com/dkooll/markparsr.svg)](https://pkg.go.dev/github.com/dkooll/markparsr)
 
 Markparsr ensures there's consistency between your terraform modules and markdown documentation, helping maintain documentation quality as your module evolves.
 
@@ -7,7 +7,7 @@ This go package analyzes both HCL files and markdown to identify gaps or inconsi
 ## Installation
 
 ```zsh
-go get github.com/azyphon/markparsr
+go get github.com/dkooll/markparsr
 ```
 
 ## Usage
@@ -80,6 +80,14 @@ Variables and outputs are verified to match between HCL definitions and markdown
 Required module files are confirmed to exist and contain content.
 
 Urls in the markdown documentation are validated for accessibility.
+
+## Contributors
+
+We welcome contributions from the community! Whether it's reporting a bug, suggesting a new feature, or submitting a pull request, your input is highly valued.
+
+<a href="https://github.com/cloudnationhq/terraform-azure-sa/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=cloudnationhq/terraform-azure-sa" />
+</a>
 
 ## Notes
 

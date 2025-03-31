@@ -1,7 +1,7 @@
 package test
 
 import (
-	"github.com/azyphon/markparsr"
+	"github.com/dkooll/markparsr"
 	"testing"
 )
 

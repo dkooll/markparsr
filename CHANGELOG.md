@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.20.0](https://github.com/dkooll/markparsr/compare/v1.19.0...v1.20.0) (2025-03-31)
+
+
+### Features
+
+* update documentation ([#44](https://github.com/dkooll/markparsr/issues/44)) ([8c68f7f](https://github.com/dkooll/markparsr/commit/8c68f7fcb0f6a91fb28dba33c7614f8a60087943))
+
 ## [1.19.0](https://github.com/azyphon/markparsr/compare/v1.18.0...v1.19.0) (2025-03-22)
 
 

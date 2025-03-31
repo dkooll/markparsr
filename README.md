@@ -83,7 +83,7 @@ Urls in the markdown documentation are validated for accessibility.
 
 ## Contributors
 
-We welcome contributions from the community! Whether it's reporting a bug, suggesting a new feature, or submitting a pull request, your input is highly valued.
+We welcome contributions from the community! Whether it's reporting a bug, suggesting a new feature, or submitting a pull request, your input is highly valued. <br><br>
 
 <a href="https://github.com/dkooll/markparsr/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=dkooll/markparsr" />

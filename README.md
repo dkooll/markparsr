@@ -85,8 +85,8 @@ Urls in the markdown documentation are validated for accessibility.
 
 We welcome contributions from the community! Whether it's reporting a bug, suggesting a new feature, or submitting a pull request, your input is highly valued.
 
-<a href="https://github.com/cloudnationhq/terraform-azure-sa/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=cloudnationhq/terraform-azure-sa" />
+<a href="https://github.com/dkooll/markparsr/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=dkooll/markparsr" />
 </a>
 
 ## Notes

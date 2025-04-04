@@ -28,6 +28,9 @@ type Options struct {
 	// ReadmePath specifies the path to the README file
 	// If empty, README_PATH environment variable will be used
 	ReadmePath string
+
+	// ProviderPrefixes specifies the provider prefixes to recognize in resources
+	ProviderPrefixes []string
 }
 
 // Option is a function that configures Options
@@ -61,6 +64,13 @@ func WithRelativeReadmePath(path string) Option {
 	}
 }
 
+// WithProviderPrefixes specifies custom provider prefixes to recognize
+func WithProviderPrefixes(prefixes ...string) Option {
+	return func(o *Options) {
+		o.ProviderPrefixes = prefixes
+	}
+}
+
 // ReadmeValidator coordinates validation of Terraform module documentation
 type ReadmeValidator struct {
 	readmePath string
@@ -80,6 +90,7 @@ func NewReadmeValidator(opts ...Option) (*ReadmeValidator, error) {
 		AdditionalSections: []string{},
 		AdditionalFiles:    []string{},
 		ReadmePath:         "",
+		ProviderPrefixes:   []string{},
 	}
 
 	// Apply all functional options
@@ -139,7 +150,7 @@ func NewReadmeValidator(opts ...Option) (*ReadmeValidator, error) {
 	}
 
 	// Initialize content analyzers
-	markdown := NewMarkdownContent(string(data), options.Format)
+	markdown := NewMarkdownContent(string(data), options.Format, options.ProviderPrefixes)
 
 	terraform, err := NewTerraformContent(absModulePath)
 	if err != nil {

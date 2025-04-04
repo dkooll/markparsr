@@ -20,6 +20,7 @@ func TestReadmeValidationExplicit(t *testing.T) {
 		markparsr.WithRelativeReadmePath("../module/README.md"),
 		markparsr.WithAdditionalSections("Goals", "Testing", "Notes"),
 		markparsr.WithAdditionalFiles("GOALS.md", "TESTING.md"),
+		markparsr.WithProviderPrefixes("azurerm_", "random_", "tls_"),
 	)
 
 	if err != nil {
@@ -42,6 +43,7 @@ func TestReadmeValidation(t *testing.T) {
 	validator, err := markparsr.NewReadmeValidator(
 		markparsr.WithAdditionalSections("Goals", "Testing", "Notes"),
 		markparsr.WithAdditionalFiles("GOALS.md", "TESTING.md"),
+		markparsr.WithProviderPrefixes("azurerm_", "random_", "tls_"),
 	)
 
 	if err != nil {
@@ -80,6 +82,20 @@ Variables and outputs are verified to match between HCL definitions and markdown
 Required module files are confirmed to exist and contain content.
 
 Urls in the markdown documentation are validated for accessibility.
+
+## Options
+
+Markparsr supports a functional options pattern for configuration:
+
+`WithFormat(format):` Sets the markdown format explicitly (document, table, or auto)
+
+`WithAdditionalSections(sections...):` Specifies additional sections to validate
+
+`WithAdditionalFiles(files...):` Specifies additional files to validate
+
+`WithRelativeReadmePath(path):` Specifies the path to the README file
+
+`WithProviderPrefixes(prefixes...):` Specifies custom provider prefixes to recognize
 
 ## Contributors
 

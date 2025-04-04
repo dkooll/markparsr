@@ -37,16 +37,17 @@ type FormatScore struct {
 
 // MarkdownContent parses and analyzes Terraform module documentation
 type MarkdownContent struct {
-	data          string
-	rootNode      ast.Node
-	sections      map[string]bool
-	sectionConfig map[string]sectionConfig
-	format        MarkdownFormat
-	stringPool    *sync.Pool
+	data             string
+	rootNode         ast.Node
+	sections         map[string]bool
+	sectionConfig    map[string]sectionConfig
+	format           MarkdownFormat
+	stringPool       *sync.Pool
+	providerPrefixes []string
 }
 
 // NewMarkdownContent creates a new analyzer for markdown content
-func NewMarkdownContent(data string, format MarkdownFormat) *MarkdownContent {
+func NewMarkdownContent(data string, format MarkdownFormat, providerPrefixes []string) *MarkdownContent {
 	extensions := parser.CommonExtensions | parser.AutoHeadingIDs
 	p := parser.NewWithExtensions(extensions)
 	rootNode := markdown.Parse([]byte(data), p)
@@ -88,8 +89,9 @@ func NewMarkdownContent(data string, format MarkdownFormat) *MarkdownContent {
 				return &strings.Builder{}
 			},
 		},
-		format:        format,
-		sectionConfig: sectionConfig,
+		format:           format,
+		sectionConfig:    sectionConfig,
+		providerPrefixes: providerPrefixes,
 	}
 
 	// Auto-detect format if not specified
@@ -507,8 +509,8 @@ func (mc *MarkdownContent) extractDocumentResourcesAndDataSources() ([]string, [
 				linkText := mc.extractText(link)
 				destination := string(link.Destination)
 
-				// Look for provider resource patterns (azurerm_, aws_, etc.)
-				if hasProviderPrefix(linkText) {
+				// Look for provider resource patterns
+				if mc.hasProviderPrefix(linkText) {
 					resourceName := strings.Split(linkText, "]")[0]
 					resourceName = strings.TrimPrefix(resourceName, "[")
 					baseName := strings.Split(resourceName, ".")[0]
@@ -632,7 +634,7 @@ func (mc *MarkdownContent) extractResourcesFromTable(table *ast.Table, nameColIn
 			parts := strings.Split(name, ".")
 			baseName := parts[0]
 
-			if hasProviderPrefix(name) {
+			if mc.hasProviderPrefix(name) {
 				if strings.Contains(resourceType, "data source") {
 					addUnique(&dataSources, name)
 					addUnique(&dataSources, baseName)
@@ -851,6 +853,23 @@ func (mc *MarkdownContent) extractText(node ast.Node) string {
 	return sb.String()
 }
 
+// hasProviderPrefix checks if a string has a recognized provider prefix
+func (mc *MarkdownContent) hasProviderPrefix(s string) bool {
+	s = strings.ToLower(s)
+
+	// If no provider prefixes are configured, use default behavior
+	if len(mc.providerPrefixes) == 0 {
+		return false
+	}
+
+	for _, prefix := range mc.providerPrefixes {
+		if strings.HasPrefix(s, strings.ToLower(prefix)) {
+			return true
+		}
+	}
+	return false
+}
+
 // Helper functions
 
 // getNextSibling returns the next sibling of a node
@@ -866,20 +885,6 @@ func getNextSibling(node ast.Node) ast.Node {
 		}
 	}
 	return nil
-}
-
-// hasProviderPrefix checks if a string has a recognized provider prefix
-func hasProviderPrefix(s string) bool {
-	s = strings.ToLower(s)
-	commonPrefixes := []string{
-		"azurerm_", "random_",
-	}
-	for _, prefix := range commonPrefixes {
-		if strings.HasPrefix(s, prefix) {
-			return true
-		}
-	}
-	return false
 }
 
 // addUnique adds a string to a slice if it's not already present
@@ -940,4 +945,12 @@ func min(a, b, c int) int {
 		return b
 	}
 	return c
+}
+
+// max returns the maximum of two integers
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }

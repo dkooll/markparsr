@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.21.0](https://github.com/dkooll/markparsr/compare/v1.20.0...v1.21.0) (2025-04-04)
+
+
+### Features
+
+* add provider prefix configuration via options pattern ([#46](https://github.com/dkooll/markparsr/issues/46)) ([3e28259](https://github.com/dkooll/markparsr/commit/3e28259d5e0809ac7ce19e2348b6c97eb64cbd40))
+
 ## [1.20.0](https://github.com/dkooll/markparsr/compare/v1.19.0...v1.20.0) (2025-03-31)
 
 

@@ -98,7 +98,6 @@ func (tc *TerraformContent) ExtractResourcesAndDataSources() ([]string, []string
 	var resources []string
 	var dataSources []string
 
-	// Scan all .tf files in the directory
 	files, err := os.ReadDir(tc.workspace)
 	if err != nil {
 		if os.IsNotExist(err) {

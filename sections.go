@@ -105,9 +105,6 @@ func (sv *SectionValidator) Validate() []error {
 		}
 	}
 
-	// Any remaining found sections that haven't been handled are ignored
-	// (they can exist in any form and won't cause validation errors)
-
 	// For table format, also validate table columns
 	if sv.content.format == FormatTable {
 		tableErrors := sv.content.ValidateTableColumns()

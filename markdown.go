@@ -119,12 +119,9 @@ func NewMarkdownContent(data string, format MarkdownFormat, providerPrefixes []s
 	return mc
 }
 
-// detectFormat determines whether the markdown uses document or table style
-// using the heuristic approach
 // detectFormatHeuristic determines markdown format using a scoring system
 // Returns document score, table score, and the detected format
 func (mc *MarkdownContent) detectFormatHeuristic() (int, int, MarkdownFormat) {
-	// Create scoring structures
 	documentScore := &FormatScore{
 		Score:       0,
 		SectionHits: make(map[string]string),
@@ -189,7 +186,6 @@ func (mc *MarkdownContent) detectFormatHeuristic() (int, int, MarkdownFormat) {
 
 // analyzeSection checks a specific section for format indicators
 func (mc *MarkdownContent) analyzeSection(sectionName string) MarkdownFormat {
-	// First, try to find the section
 	var sectionHeading *ast.Heading
 
 	ast.WalkFunc(mc.rootNode, func(node ast.Node, entering bool) ast.WalkStatus {
@@ -208,7 +204,6 @@ func (mc *MarkdownContent) analyzeSection(sectionName string) MarkdownFormat {
 	})
 
 	if sectionHeading == nil {
-		// Section not found
 		return ""
 	}
 
@@ -239,7 +234,6 @@ func (mc *MarkdownContent) analyzeSection(sectionName string) MarkdownFormat {
 		return FormatDocument
 	}
 
-	// If no clear indicators, return empty string
 	return ""
 }
 

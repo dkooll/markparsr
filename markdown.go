@@ -1,3 +1,4 @@
+// Package markparsr validates Terraform resources against markdown documentation.
 package markparsr
 
 import (

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.22.0](https://github.com/dkooll/markparsr/compare/v1.21.0...v1.22.0) (2025-06-21)
+
+
+### Features
+
+* solving linting warning by adding a package comment ([#48](https://github.com/dkooll/markparsr/issues/48)) ([b3026a3](https://github.com/dkooll/markparsr/commit/b3026a3bbb46e00ad0c531f3c224bdee086c1da0))
+
 ## [1.21.0](https://github.com/dkooll/markparsr/compare/v1.20.0...v1.21.0) (2025-04-04)
 
 

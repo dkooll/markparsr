@@ -5,31 +5,37 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclparse"
 )
 
-// TerraformContent extracts resources, data sources, variables, and outputs
-// from Terraform files for documentation validation.
-type TerraformContent struct {
-	workspace  string
-	parserPool *sync.Pool
-	fileCache  sync.Map
+type defaultFileReader struct{}
+
+func (dfr *defaultFileReader) ReadFile(path string) ([]byte, error) {
+	return os.ReadFile(path)
 }
 
-// NewTerraformContent creates a new analyzer for Terraform content.
-// It uses the provided module path as the root directory for Terraform files.
-// For CI/CD compatibility, GITHUB_WORKSPACE is used only if modulePath is empty.
+type defaultHCLParser struct{}
+
+func (dhp *defaultHCLParser) ParseHCL(content []byte, filename string) (*hcl.File, hcl.Diagnostics) {
+	parser := hclparse.NewParser()
+	return parser.ParseHCL(content, filename)
+}
+
+type TerraformContent struct {
+	workspace  string
+	fileReader FileReader
+	hclParser  HCLParser
+	readDir    func(string) ([]os.DirEntry, error)
+}
+
 func NewTerraformContent(modulePath string) (*TerraformContent, error) {
-	// If no modulePath provided, check for GITHUB_WORKSPACE
 	if modulePath == "" {
 		githubWorkspace := os.Getenv("GITHUB_WORKSPACE")
 		if githubWorkspace != "" {
 			modulePath = githubWorkspace
 		} else {
-			// Last resort - use current directory
 			var err error
 			modulePath, err = os.Getwd()
 			if err != nil {
@@ -39,33 +45,43 @@ func NewTerraformContent(modulePath string) (*TerraformContent, error) {
 	}
 
 	return &TerraformContent{
-		workspace: modulePath,
-		parserPool: &sync.Pool{
-			New: func() any {
-				return hclparse.NewParser()
-			},
-		},
+		workspace:  modulePath,
+		fileReader: &defaultFileReader{},
+		hclParser:  &defaultHCLParser{},
+		readDir:    os.ReadDir,
 	}, nil
 }
 
-// ExtractItems gets items of a specific block type from a Terraform file.
-func (tc *TerraformContent) ExtractItems(filePath, blockType string) ([]string, error) {
-	content, err := os.ReadFile(filePath)
+func (tc *TerraformContent) parseFile(filePath string) (*hcl.File, error) {
+	content, err := tc.fileReader.ReadFile(filePath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return []string{}, nil
+			return nil, nil
 		}
 		return nil, fmt.Errorf("error reading file %s: %w", filepath.Base(filePath), err)
 	}
 
-	parser := tc.parserPool.Get().(*hclparse.Parser)
-	defer tc.parserPool.Put(parser)
-
-	file, parseDiags := parser.ParseHCL(content, filePath)
+	file, parseDiags := tc.hclParser.ParseHCL(content, filePath)
 	if parseDiags.HasErrors() {
 		return nil, fmt.Errorf("error parsing HCL in %s: %v", filepath.Base(filePath), parseDiags)
 	}
 
+	return file, nil
+}
+
+func (tc *TerraformContent) ExtractItems(filePath, blockType string) ([]string, error) {
+	file, err := tc.parseFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+	if file == nil {
+		return []string{}, nil
+	}
+
+	return tc.extractItemsFromFile(file, filePath, blockType)
+}
+
+func (tc *TerraformContent) extractItemsFromFile(file *hcl.File, filePath, blockType string) ([]string, error) {
 	var items []string
 	body := file.Body
 	hclContent, _, diags := body.PartialContent(&hcl.BodySchema{
@@ -92,13 +108,46 @@ func (tc *TerraformContent) ExtractItems(filePath, blockType string) ([]string, 
 	return items, nil
 }
 
-// ExtractResourcesAndDataSources finds all resources and data sources defined in
-// Terraform files, looking directly in the module directory.
+func (tc *TerraformContent) ExtractModuleItems(blockType string) ([]string, error) {
+	files, err := tc.readDir(tc.workspace)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return []string{}, nil
+		}
+		return nil, fmt.Errorf("error reading directory %s: %w", tc.workspace, err)
+	}
+
+	seen := make(map[string]struct{})
+	var items []string
+
+	for _, file := range files {
+		if file.IsDir() || !strings.HasSuffix(file.Name(), ".tf") {
+			continue
+		}
+
+		filePath := filepath.Join(tc.workspace, file.Name())
+		fileItems, err := tc.ExtractItems(filePath, blockType)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, item := range fileItems {
+			if _, ok := seen[item]; ok {
+				continue
+			}
+			seen[item] = struct{}{}
+			items = append(items, item)
+		}
+	}
+
+	return items, nil
+}
+
 func (tc *TerraformContent) ExtractResourcesAndDataSources() ([]string, []string, error) {
 	var resources []string
 	var dataSources []string
 
-	files, err := os.ReadDir(tc.workspace)
+	files, err := tc.readDir(tc.workspace)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return resources, dataSources, nil
@@ -124,24 +173,19 @@ func (tc *TerraformContent) ExtractResourcesAndDataSources() ([]string, []string
 	return resources, dataSources, nil
 }
 
-// extractFromFilePath gets resources and data sources from a single Terraform file.
 func (tc *TerraformContent) extractFromFilePath(filePath string) ([]string, []string, error) {
-	content, err := os.ReadFile(filePath)
+	file, err := tc.parseFile(filePath)
 	if err != nil {
-		if os.IsNotExist(err) {
-			return []string{}, []string{}, nil
-		}
-		return nil, nil, fmt.Errorf("error reading file %s: %w", filepath.Base(filePath), err)
+		return nil, nil, err
+	}
+	if file == nil {
+		return []string{}, []string{}, nil
 	}
 
-	parser := tc.parserPool.Get().(*hclparse.Parser)
-	defer tc.parserPool.Put(parser)
+	return tc.extractResourcesFromFile(file, filePath)
+}
 
-	file, parseDiags := parser.ParseHCL(content, filePath)
-	if parseDiags.HasErrors() {
-		return nil, nil, fmt.Errorf("error parsing HCL in %s: %v", filepath.Base(filePath), parseDiags)
-	}
-
+func (tc *TerraformContent) extractResourcesFromFile(file *hcl.File, filePath string) ([]string, []string, error) {
 	var resources []string
 	var dataSources []string
 	body := file.Body

@@ -1,18 +1,18 @@
 package test
 
 import (
-	"github.com/dkooll/markparsr"
 	"testing"
+
+	"github.com/dkooll/markparsr"
 )
 
-func TestReadmeValidationExplicit(t *testing.T) {
-
+func TestReadmeValidation(t *testing.T) {
 	validator, err := markparsr.NewReadmeValidator(
 		markparsr.WithRelativeReadmePath("../module/README.md"),
 		markparsr.WithAdditionalSections("Goals", "Testing", "Notes"),
 		markparsr.WithAdditionalFiles("GOALS.md", "TESTING.md"),
+		markparsr.WithProviderPrefixes("azurerm_", "random_", "tls_"),
 	)
-
 	if err != nil {
 		t.Fatalf("Failed to create validator: %v", err)
 	}

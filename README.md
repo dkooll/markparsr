@@ -1,101 +1,100 @@
 # markparsr [![Go Reference](https://pkg.go.dev/badge/github.com/dkooll/markparsr.svg)](https://pkg.go.dev/github.com/dkooll/markparsr)
 
-Markparsr ensures there's consistency between your terraform modules and markdown documentation, helping maintain documentation quality as your module evolves.
+A terraform documentation validation tool that keeps README files aligned with their module sources.
 
-This go package analyzes both HCL files and markdown to identify gaps or inconsistencies.
+Ensures your module docs stay accurate, highlights drift automatically, and provides detailed reporting for reliable infrastructure documentation.
+
+## Why markparsr?
+
+Terraform modules evolve rapidly and documentation often lags behind—missing sections, outdated variable descriptions, or stale resource lists create confusion.
+
+Manual auditing is tedious and error-prone.
+
+`markparsr helps you:`
+
+Validate docs against Terraform source before shipping changes.
+
+Keep documentation aligned with Terraform definitions.
+
+Run lightweight checks in CI/CD for every module.
+
+Support custom sections, provider prefixes, and file requirements.
+
+Automate documentation hygiene across teams and repositories.
 
 ## Installation
 
-```zsh
-go get github.com/dkooll/markparsr
-```
+`go get github.com/dkooll/markparsr`
 
 ## Usage
 
-as a local test with a relative path:
+See the [examples/](examples/) directory for sample Terraform modules and validator tests.
 
-```go
-func TestReadmeValidationExplicit(t *testing.T) {
-	validator, err := markparsr.NewReadmeValidator(
-		markparsr.WithRelativeReadmePath("../module/README.md"),
-		markparsr.WithAdditionalSections("Goals", "Testing", "Notes"),
-		markparsr.WithAdditionalFiles("GOALS.md", "TESTING.md"),
-		markparsr.WithProviderPrefixes("azurerm_", "random_", "tls_"),
-	)
-
-	if err != nil {
-		t.Fatalf("Failed to create validator: %v", err)
-	}
-
-	errors := validator.Validate()
-	if len(errors) > 0 {
-		for _, err := range errors {
-			t.Errorf("Validation error: %v", err)
-		}
-	}
-}
-```
-
-within github actions:
-
-```go
-func TestReadmeValidation(t *testing.T) {
-	validator, err := markparsr.NewReadmeValidator(
-		markparsr.WithAdditionalSections("Goals", "Testing", "Notes"),
-		markparsr.WithAdditionalFiles("GOALS.md", "TESTING.md"),
-		markparsr.WithProviderPrefixes("azurerm_", "random_", "tls_"),
-	)
-
-	if err != nil {
-		t.Fatalf("Failed to create validator: %v", err)
-	}
-
-	errors := validator.Validate()
-	if len(errors) > 0 {
-		for _, err := range errors {
-			t.Errorf("Validation error: %v", err)
-		}
-	}
-}
-```
-
-```yaml
-  - name: run global tests
-    working-directory: called/tests
-    run: go test -v ./...
-    env:
-      README_PATH: "${{ github.workspace }}/caller/README.md"
-```
+Run the Go tests inside `examples/usage/` to validate the bundled example module.
 
 ## Features
 
-The markdown README is validated to contain all required sections from [terraform-docs](https://terraform-docs.io/) output, plus any additional optional content using the functional options pattern.
+`README Section Validation`
 
-Automatically detects and supports both document and table output formats from terraform-docs using a sophisticated scoring system with format confidence reporting.
+Enforces Terraform-docs sections (Requirements, Providers, Inputs, Outputs, Resources).
 
-It ensures all resources in your HCL Terraform code are properly documented in the README.
+Detects missing or misspelled headings with typo-friendly matching.
 
-It checks that all resources mentioned in the README actually exist in your terraform code.
+Extracts items even when headings disappear by leveraging anchors.
 
-Variables and outputs are verified to match between HCL definitions and markdown documentation.
+`HCL ↔ README Consistency`
 
-Required module files are confirmed to exist and contain content.
+Compares documented variables and outputs with those declared in HCL.
 
-Urls in the markdown documentation are validated for accessibility.
+Verifies resources and data sources referenced in the README actually exist in code.
 
-## Options
+Supports provider prefix configuration for custom naming schemes.
 
-Markparsr supports a functional options pattern for configuration:
+`File & URL Checks`
 
-`WithFormat(format):` Sets the markdown format explicitly (document, table, or auto)
+Ensures key module files (README, variables.tf, outputs.tf, terraform.tf) are present and non-empty.
 
-`WithAdditionalSections(sections...):` Specifies additional sections to validate
+Validates URLs in the README respond successfully.
 
-`WithAdditionalFiles(files...):` Specifies additional files to validate
+`Flexible Configuration`
 
-`WithRelativeReadmePath(path):` Specifies the path to the README file
+Functional options for additional sections, extra files, provider prefixes, and README paths.
 
-`WithProviderPrefixes(prefixes...):` Specifies custom provider prefixes to recognize
+Environment variable overrides for CI/CD (`README_PATH`, `MODULE_PATH`, `FORMAT`, `VERBOSE`).
+
+Lightweight output suitable for Go test integration and automation.
+
+## Configuration
+
+`Functional Options`
+
+`WithFormat(format)`: Force the markdown format (defaults to `document`).
+
+`WithAdditionalSections(sections...)`: Require extra documentation sections.
+
+`WithAdditionalFiles(files...)`: Ensure additional files exist beside Terraform defaults.
+
+`WithRelativeReadmePath(path)`: Point to the README when it is not in the module root.
+
+`WithProviderPrefixes(prefixes...)`: Recognize custom resource prefixes.
+
+`Environment Variables`
+
+`README_PATH`: Absolute README path when not passed via options.
+
+`MODULE_PATH`: Module root directory (defaults to the README directory).
+
+`FORMAT`: Set to `document`; other values fall back to document mode with a warning.
+
+`VERBOSE`: When `true`, prints diagnostic information.
+
+### Notes
+
+markparsr assumes Terraform-docs style READMEs with H2/H3 headings and anchor links.
+
+Provider prefixes help resource detection across custom modules and registries.
+
+Run validators in CI to prevent documentation drift before merging.
 
 ## Contributors
 
@@ -104,10 +103,3 @@ We welcome contributions from the community! Whether it's reporting a bug, sugge
 <a href="https://github.com/dkooll/markparsr/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=dkooll/markparsr" />
 </a>
-
-## Notes
-
-The `README_PATH` environment variable takes highest priority if set.
-The path provided to NewReadmeValidator() is used if no environment variable exists.
-
-This approach supports both local testing and CI/CD environments with the same code.

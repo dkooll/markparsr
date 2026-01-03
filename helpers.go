@@ -47,9 +47,9 @@ func buildItemIndex(items []string) itemIndex {
 
 		base := key
 		hasDot := false
-		if pos := strings.Index(trimmed, "."); pos != -1 {
+		if baseName, _, ok := strings.Cut(trimmed, "."); ok {
 			hasDot = true
-			base = strings.ToLower(strings.TrimSpace(trimmed[:pos]))
+			base = strings.ToLower(strings.TrimSpace(baseName))
 			qualifiedBases[base] = true
 		}
 

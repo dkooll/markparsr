@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/hashicorp/hcl/v2"
@@ -190,14 +191,7 @@ output "name" {
 			}
 
 			for _, expected := range tt.expectedItems {
-				found := false
-				for _, item := range items {
-					if item == expected {
-						found = true
-						break
-					}
-				}
-				if !found {
+				if !slices.Contains(items, expected) {
 					t.Errorf("ExtractItems() missing expected item %q", expected)
 				}
 			}
@@ -291,27 +285,13 @@ data "azurerm_client_config" "current" {}
 			}
 
 			for _, expected := range tt.expectedResources {
-				found := false
-				for _, res := range resources {
-					if res == expected {
-						found = true
-						break
-					}
-				}
-				if !found {
+				if !slices.Contains(resources, expected) {
 					t.Errorf("ExtractResourcesAndDataSources() missing expected resource %q", expected)
 				}
 			}
 
 			for _, expected := range tt.expectedDataSrcs {
-				found := false
-				for _, ds := range dataSources {
-					if ds == expected {
-						found = true
-						break
-					}
-				}
-				if !found {
+				if !slices.Contains(dataSources, expected) {
 					t.Errorf("ExtractResourcesAndDataSources() missing expected data source %q", expected)
 				}
 			}

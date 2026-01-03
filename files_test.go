@@ -3,6 +3,7 @@ package markparsr
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -292,14 +293,7 @@ func TestFileValidator_RequiredFilesContent(t *testing.T) {
 	}
 
 	for _, expected := range expectedFiles {
-		found := false
-		for _, actual := range fv.requiredFiles {
-			if actual == expected {
-				found = true
-				break
-			}
-		}
-		if !found {
+		if !slices.Contains(fv.requiredFiles, expected) {
 			t.Errorf("NewFileValidator() missing required file %q", expected)
 		}
 	}

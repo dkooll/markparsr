@@ -3,7 +3,6 @@ module github.com/dkooll/markparsr
 go 1.24.1
 
 require (
-	github.com/azyphon/markparsr v1.19.0
 	github.com/gomarkdown/markdown v0.0.0-20250311123330-531bef5e742b
 	github.com/hashicorp/hcl/v2 v2.23.0
 	mvdan.cc/xurls/v2 v2.6.0

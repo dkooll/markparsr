@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.22.0](https://github.com/dkooll/markparsr/compare/v1.21.0...v1.22.0) (2026-01-03)
+
+
+### Features
+
+* **deps:** bump actions/checkout from 4 to 6 ([#53](https://github.com/dkooll/markparsr/issues/53)) ([ab813f1](https://github.com/dkooll/markparsr/commit/ab813f178b1394e7e3b823a5347f7654ad74312b))
+* **deps:** bump actions/setup-go from 5 to 6 ([#51](https://github.com/dkooll/markparsr/issues/51)) ([e3be702](https://github.com/dkooll/markparsr/commit/e3be702e8d7505339d89cc865f5c76d00b330c07))
+* **deps:** bump actions/upload-artifact from 4 to 6 ([#52](https://github.com/dkooll/markparsr/issues/52)) ([0aa8219](https://github.com/dkooll/markparsr/commit/0aa8219bbbd524d01522118dff3e68c0481859fb))
+* **deps:** bump github.com/hashicorp/hcl/v2 from 2.23.0 to 2.24.0 ([#54](https://github.com/dkooll/markparsr/issues/54)) ([e39d75c](https://github.com/dkooll/markparsr/commit/e39d75c3f89c4624b8b6a25ccb72bdfb2bda8ac6))
+* increase test coverage ([#50](https://github.com/dkooll/markparsr/issues/50)) ([479acb1](https://github.com/dkooll/markparsr/commit/479acb1b37800b0d4dbb1ec6c7c845ed25738279))
+* solving linting warning by adding a package comment ([#48](https://github.com/dkooll/markparsr/issues/48)) ([b3026a3](https://github.com/dkooll/markparsr/commit/b3026a3bbb46e00ad0c531f3c224bdee086c1da0))
+
 ## [1.21.0](https://github.com/dkooll/markparsr/compare/v1.20.0...v1.21.0) (2025-04-04)
 
 
